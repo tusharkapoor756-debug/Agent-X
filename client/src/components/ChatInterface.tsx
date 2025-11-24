@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import API_URL from '../config';
 import { useParams } from 'react-router-dom';
 
 interface Message {
@@ -45,7 +46,7 @@ const ChatInterface: React.FC = () => {
 
     const fetchBusinessData = async () => {
         try {
-            const response = await fetch(`http://localhost:3000/api/business/${businessId}/public`);
+            const response = await fetch(`${API_URL}/business/${businessId}/public`);
             const data = await response.json();
 
             if (data.success) {
@@ -95,7 +96,7 @@ const ChatInterface: React.FC = () => {
         setIsTyping(true);
 
         try {
-            const response = await fetch(`http://localhost:3000/api/chat/${businessId}`, {
+            const response = await fetch(`${API_URL}/chat/${businessId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

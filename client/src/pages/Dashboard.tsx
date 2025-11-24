@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import API_URL from '../config';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -31,7 +32,7 @@ const Dashboard = () => {
 
     const fetchBusiness = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/business/my-business', {
+            const response = await fetch(`${API_URL}/business/my-business`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

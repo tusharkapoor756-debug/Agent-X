@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import API_URL from '../config';
 import { useNavigate } from 'react-router-dom';
 
 interface Product {
@@ -62,7 +63,7 @@ const BusinessOnboarding = () => {
         setIsParsing(true);
         try {
             // We use a dummy ID 'preview' since we just want to parse
-            const response = await fetch('http://localhost:3000/api/business/preview/parse-offers', {
+            const response = await fetch(`${API_URL}/business/preview/parse-offers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ offers_text: offersText })
@@ -96,7 +97,7 @@ const BusinessOnboarding = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3000/api/business', {
+            const response = await fetch(`${API_URL}/business`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

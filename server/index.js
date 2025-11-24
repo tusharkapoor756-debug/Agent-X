@@ -13,9 +13,11 @@ app.use(express.json());
 
 // Import routes
 const businessRoutes = require('./routes/business');
+const authRoutes = require('./routes/auth');
 
 // Register routes
 app.use('/api/business', businessRoutes);
+app.use('/api/auth', authRoutes);
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -190,6 +192,10 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log(`🚀 Server running on http://localhost:${port}`);
-});
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`🚀 Server running on http://localhost:${port}`);
+    });
+}
+
+module.exports = app;
