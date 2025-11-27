@@ -2,18 +2,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-gradient-start: #0C0F17;
-  --bg-gradient-end: #111621;
-  --text-primary: #E5E7EB;
-  --accent-primary: #4F9BFF;
-  --accent-secondary: #9F70FF;
+  --bg-dark: #0B0F14;
+  --panel-bg: rgba(255, 255, 255, 0.03);
+  --panel-border: rgba(100, 180, 255, 0.25);
+  --accent: #4F9BFF;
+  --text-main: #E6F1FF;
+  --text-soft: #B8C7E0;
+  --focus-ring: rgba(79, 155, 255, 0.5);
 }
 
 body {
-  background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
-  color: var(--text-primary);
+  background: var(--bg-dark);
+  color: var(--text-main);
   font-family: "Inter", sans-serif;
   min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px),
+    linear-gradient(90deg,
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px);
+  background-size: 45px 45px;
+  pointer-events: none;
 }
 
 .chat-bg {
