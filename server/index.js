@@ -205,24 +205,28 @@ if (require.main === module) {
 app.post("/save-message", async (req, res) => {
     const { business_id, sender, content, timestamp } = req.body;
 
+    console.log("SAVE HIT:", req.body); // DEBUG LOG
+
+    if (!business_id || !sender || !content) {
+        return res.status(400).json({ error: "Missing fields" });
+    }
+
     try {
         const { data, error } = await supabase
             .from("messages")
-            .insert([
-                {
-                    business_id,
-                    sender,
-                    content,
-                    timestamp: timestamp || new Date().toISOString(),
-                }
-            ]);
+            .insert({
+                business_id,
+                sender,
+                content,
+                timestamp: timestamp || new Date().toISOString(),
+            });
 
         if (error) {
             console.error("Supabase insert error:", error);
             return res.status(500).json({ error });
         }
 
-        res.json({ success: true, data });
+        return res.json({ success: true, data });
     } catch (err) {
         console.error("Server error:", err);
         res.status(500).json({ error: err.message });

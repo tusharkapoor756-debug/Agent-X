@@ -82,6 +82,9 @@ const ChatInterface: React.FC = () => {
     // Message Saving Logic
     const saveMessage = async (sender: 'user' | 'agent', content: string) => {
         if (!businessId) return;
+
+        console.log("Saving:", sender, content); // DEBUG LOG
+
         try {
             await fetch(`${API_URL}/save-message`, {
                 method: 'POST',
