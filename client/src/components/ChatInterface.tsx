@@ -89,7 +89,8 @@ const ChatInterface: React.FC = () => {
                 body: JSON.stringify({
                     business_id: businessId,
                     sender,
-                    content
+                    content,
+                    timestamp: new Date().toISOString(),
                 })
             });
         } catch (error) {
@@ -111,7 +112,7 @@ const ChatInterface: React.FC = () => {
         setMessages((prev) => [...prev, newMessage]);
         setInputValue('');
         setIsTyping(true);
-        saveMessage('user', userMessage); // Save user message
+        await saveMessage('user', userMessage); // Save user message
 
         try {
             const response = await fetch(`${API_URL}/chat/${businessId}`, {
@@ -149,10 +150,10 @@ const ChatInterface: React.FC = () => {
             const maxDelay = 3000;
             const typingDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 
-            setTimeout(() => {
+            setTimeout(async () => {
                 setMessages((prev) => [...prev, agentResponse]);
                 setIsTyping(false);
-                saveMessage('agent', data.text); // Save AI message
+                await saveMessage('agent', data.text); // Save AI message
             }, typingDelay);
 
         } catch (error) {

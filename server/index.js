@@ -203,20 +203,22 @@ if (require.main === module) {
 // @desc    Save chat message to Supabase
 // @access  Public
 app.post("/save-message", async (req, res) => {
-    const { business_id, sender, content } = req.body;
+    const { business_id, sender, content, timestamp } = req.body;
 
     try {
         const { data, error } = await supabase
             .from("messages")
-            .insert({
-                business_id,
-                sender,
-                message: content, // Mapping content to message column as per schema
-                created_at: new Date().toISOString(),
-            });
+            .insert([
+                {
+                    business_id,
+                    sender,
+                    content,
+                    timestamp: timestamp || new Date().toISOString(),
+                }
+            ]);
 
         if (error) {
-            console.error("Supabase message save error:", error);
+            console.error("Supabase insert error:", error);
             return res.status(500).json({ error });
         }
 
