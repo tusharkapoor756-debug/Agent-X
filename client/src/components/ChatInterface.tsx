@@ -60,13 +60,6 @@ const ChatInterface: React.FC = () => {
         setLoadingBusiness(false);
     };
 
-    // Initial greeting removed as per user request - AI waits for user first
-    // useEffect(() => {
-    //     if (userName && business && messages.length === 0) {
-    //         ...
-    //     }
-    // }, [userName, business]);
-
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -106,7 +99,6 @@ const ChatInterface: React.FC = () => {
                     userName: userName,
                     assistantName: assistantName,
                     history: messages
-                        // .filter((_, index) => index !== 0) // Removed: No longer needed as we don't have a fake greeting
                         .map(m => ({
                             role: m.sender === 'user' ? 'user' : 'model',
                             parts: [{ text: m.text }]
@@ -161,10 +153,10 @@ const ChatInterface: React.FC = () => {
 
     if (loadingBusiness) {
         return (
-            <div className="flex items-center justify-center h-screen bg-[#e5ddd5]">
+            <div className="flex items-center justify-center h-screen bg-bg-dark">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#075e54] mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green mx-auto shadow-[0_0_15px_#00F7A5]"></div>
+                    <p className="mt-4 text-neon-green font-orbitron animate-pulse">INITIALIZING...</p>
                 </div>
             </div>
         );
@@ -172,10 +164,10 @@ const ChatInterface: React.FC = () => {
 
     if (businessError || !business) {
         return (
-            <div className="flex items-center justify-center h-screen bg-[#e5ddd5]">
-                <div className="bg-white p-8 rounded-lg shadow-lg max-w-md">
-                    <h2 className="text-xl font-bold text-red-600 mb-4">Error</h2>
-                    <p className="text-gray-700">{businessError || 'Business not found'}</p>
+            <div className="flex items-center justify-center h-screen bg-bg-dark">
+                <div className="glass-panel p-8 rounded-lg shadow-lg max-w-md border border-red-500/50">
+                    <h2 className="text-xl font-orbitron font-bold text-red-500 mb-4 drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]">SYSTEM ERROR</h2>
+                    <p className="text-gray-300 font-inter">{businessError || 'Business not found'}</p>
                 </div>
             </div>
         );
@@ -183,30 +175,30 @@ const ChatInterface: React.FC = () => {
 
     if (!userName) {
         return (
-            <div className="flex items-center justify-center h-screen bg-[#e5ddd5]">
-                <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+            <div className="flex items-center justify-center h-screen bg-bg-dark">
+                <div className="glass-panel p-8 rounded-lg shadow-[0_0_20px_rgba(0,247,165,0.1)] w-96 border border-neon-green/30">
                     <div className="flex justify-center mb-6">
-                        <div className="w-20 h-20 rounded-full bg-[#075e54] flex items-center justify-center text-white font-bold text-2xl">
+                        <div className="w-20 h-20 rounded-full bg-bg-dark border-2 border-neon-green flex items-center justify-center text-neon-green font-orbitron font-bold text-2xl shadow-[0_0_15px_#00F7A5]">
                             {business.businessName.substring(0, 2).toUpperCase()}
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold text-center text-[#075e54] mb-2">{business.businessName}</h1>
-                    <p className="text-center text-gray-600 mb-2">{business.category}</p>
-                    <p className="text-center text-gray-600 mb-6">Please enter your name to start chatting.</p>
+                    <h1 className="text-2xl font-orbitron font-bold text-center text-neon-green mb-2 tracking-wider drop-shadow-[0_0_5px_#00F7A5]">{business.businessName}</h1>
+                    <p className="text-center text-neon-cyan/80 mb-2 font-inter text-sm tracking-widest uppercase">{business.category}</p>
+                    <p className="text-center text-gray-400 mb-6 font-inter text-sm">Identify yourself to proceed.</p>
                     <input
                         type="text"
                         value={inputName}
                         onChange={(e) => setInputName(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleStartChat()}
-                        placeholder="Your Name"
-                        className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-[#075e54]"
+                        placeholder="ENTER YOUR NAME"
+                        className="w-full p-3 bg-bg-dark border border-neon-green/50 rounded-lg mb-4 text-white placeholder-gray-600 focus:outline-none focus:border-neon-green focus:shadow-[0_0_10px_#00F7A5] transition-all font-inter"
                     />
                     <button
                         onClick={handleStartChat}
                         disabled={!inputName.trim()}
-                        className="w-full bg-[#075e54] text-white p-3 rounded-lg font-semibold hover:bg-[#128c7e] transition-colors disabled:opacity-50"
+                        className="w-full bg-transparent border border-neon-green text-neon-green p-3 rounded-lg font-orbitron font-bold hover:bg-neon-green/10 hover:scale-105 hover:shadow-[0_0_15px_#00F7A5] transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
                     >
-                        Start Chat
+                        INITIATE CHAT
                     </button>
                 </div>
             </div>
@@ -214,72 +206,70 @@ const ChatInterface: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-[#e5ddd5]">
+        <div className="flex flex-col h-screen bg-bg-dark font-inter">
             {/* Header */}
-            <div className="bg-[#075e54] p-4 flex items-center shadow-md z-10">
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#075e54] font-bold mr-3">
-                    {business.businessName.substring(0, 2).toUpperCase()}
-                </div>
-                <div>
-                    <h1 className="text-white font-semibold text-lg">{assistantName}</h1>
-                    <p className="text-green-100 text-xs">{business.businessName} • Online</p>
+            <div className="bg-bg-dark/90 backdrop-blur-md p-4 flex flex-col items-center border-b border-neon-green/30 shadow-[0_0_15px_rgba(0,247,165,0.1)] z-10 relative">
+                <h1 className="text-3xl font-orbitron font-bold text-neon-green tracking-[0.2em] animate-pulse-glow drop-shadow-[0_0_10px_#00F7A5]">
+                    AGENT-X
+                </h1>
+                <div className="flex items-center mt-2 space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-neon-green animate-pulse shadow-[0_0_5px_#00F7A5]"></div>
+                    <p className="text-neon-cyan/80 text-xs tracking-widest uppercase">
+                        {business.businessName} • {assistantName}
+                    </p>
                 </div>
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-[rgba(10,15,20,0.8)] border border-[#00FF7F] shadow-[0_0_8px_#00FF7F] rounded-xl backdrop-blur-sm m-4 relative">
+
                 {messages.map((msg) => (
                     <div
                         key={msg.id}
-                        className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} relative z-10`}
                     >
                         <div
-                            className={`max-w-[75%] p-3 rounded-lg shadow-sm relative ${msg.sender === 'user'
-                                ? 'bg-[#dcf8c6] rounded-tr-none'
-                                : 'bg-white rounded-tl-none'
+                            className={`max-w-[80%] p-4 rounded-xl backdrop-blur-sm ${msg.sender === 'user'
+                                ? 'bg-[#00FF7F] text-black'
+                                : 'bg-transparent border border-[#00FF7F] text-[#00FF7F]'
                                 }`}
                         >
-                            <p className="text-gray-800 text-sm leading-relaxed">{msg.text}</p>
-                            <span className="text-[10px] text-gray-500 block text-right mt-1">
+                            <p className="text-sm leading-relaxed font-mono">{msg.text}</p>
+                            <span className={`text-[10px] block text-right mt-2 font-mono ${msg.sender === 'user' ? 'text-black/60' : 'text-[#00FF7F]/60'}`}>
                                 {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                {msg.sender === 'user' && <span className="ml-1 text-blue-500">✓✓</span>}
                             </span>
                         </div>
                     </div>
                 ))}
 
                 {isTyping && (
-                    <div className="flex justify-start">
-                        <div className="bg-white p-3 rounded-lg rounded-tl-none shadow-sm">
-                            <div className="flex space-x-1">
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                            </div>
-                        </div>
+                    <div className="flex justify-start relative z-10">
+                        <div className="text-[#00FF7F] animate-pulse text-xl">|</div>
                     </div>
                 )}
                 <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
-            <div className="bg-[#f0f0f0] p-3 flex items-center space-x-2">
-                <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    placeholder="Type a message"
-                    className="flex-1 py-2 px-4 rounded-full border-none focus:ring-0 focus:outline-none bg-white shadow-sm"
-                />
-                <button
-                    onClick={handleSendMessage}
-                    className="p-3 rounded-full bg-[#075e54] text-white hover:bg-[#128c7e] transition-colors shadow-sm flex items-center justify-center"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
-                    </svg>
-                </button>
+            <div className="bg-bg-dark p-4 border-t border-neon-green/20 shadow-[0_-5px_20px_rgba(0,0,0,0.5)] z-10">
+                <div className="flex items-center space-x-3 max-w-4xl mx-auto">
+                    <input
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyPress}
+                        placeholder="Enter command..."
+                        className="flex-1 py-3 px-6 rounded-full bg-bg-dark border border-neon-green/30 text-white placeholder-gray-600 focus:outline-none focus:border-neon-green focus:shadow-[0_0_15px_rgba(0,247,165,0.3)] transition-all font-inter"
+                    />
+                    <button
+                        onClick={handleSendMessage}
+                        className="p-3 rounded-full bg-transparent border border-neon-green text-neon-green hover:bg-neon-green/10 hover:shadow-[0_0_15px_#00F7A5] hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 group-hover:drop-shadow-[0_0_5px_#00F7A5]">
+                            <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     );

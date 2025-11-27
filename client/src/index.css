@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --matrix-bg: #0A0F14;
+  --matrix-green: #00FF7F;
+  --matrix-green-dark: #00D16B;
+  --matrix-text: #C8FFC8;
+}
+
+body {
+  background: var(--matrix-bg);
+  color: var(--matrix-text);
+  font-family: "JetBrains Mono", monospace;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom,
+      rgba(0, 255, 127, 0.03) 0px,
+      rgba(0, 255, 127, 0.03) 2px,
+      transparent 2px,
+      transparent 4px);
+  opacity: 0.25;
+  z-index: 9999;
+}

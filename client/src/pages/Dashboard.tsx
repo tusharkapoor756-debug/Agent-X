@@ -106,27 +106,30 @@ const Dashboard = () => {
     if (!business) return null;
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#0A0F14] font-mono relative overflow-hidden">
+            {/* Background Grid */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,127,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,127,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+
             {/* Header */}
-            <header className="bg-white shadow">
+            <header className="bg-[#0A0F14]/90 backdrop-blur-md border-b border-[#00FF7F]/30 sticky top-0 z-50 shadow-[0_0_15px_rgba(0,255,127,0.1)]">
                 <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-[#075e54] rounded-full flex items-center justify-center text-white font-bold text-xl">
+                            <div className="w-12 h-12 rounded-full bg-[#0A0F14] border-2 border-[#00FF7F] flex items-center justify-center text-[#00FF7F] font-mono font-bold text-xl shadow-[0_0_10px_#00FF7F]">
                                 {business.businessName.charAt(0)}
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-800">{business.businessName}</h1>
-                                <p className="text-sm text-gray-500">{business.category}</p>
+                                <h1 className="text-2xl font-bold font-mono text-[#00FF7F] tracking-wider drop-shadow-[0_0_5px_#00FF7F]">AGENT-X</h1>
+                                <p className="text-xs text-white tracking-widest uppercase">{business.businessName}</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <span className="text-gray-600">Welcome, {user?.name}</span>
+                            <span className="text-gray-400 text-sm hidden sm:block">OPERATOR: <span className="text-[#00FF7F]">{user?.name}</span></span>
                             <button
                                 onClick={handleLogout}
-                                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                                className="bg-transparent border border-red-500/50 text-red-400 px-4 py-2 rounded-lg hover:bg-red-500/10 hover:shadow-[0_0_10px_rgba(239,68,68,0.3)] transition-all text-xs font-bold uppercase tracking-wider"
                             >
-                                Logout
+                                TERMINATE SESSION
                             </button>
                         </div>
                     </div>
@@ -134,54 +137,51 @@ const Dashboard = () => {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Business Info Card */}
-                    <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-                        <div className="flex justify-between items-start mb-6">
-                            <h2 className="text-xl font-bold text-gray-800">Business Information</h2>
+                    <div className="lg:col-span-2 bg-[rgba(10,15,20,0.8)] rounded-xl shadow-[0_0_15px_rgba(0,255,127,0.05)] p-6 border border-[#00FF7F]/20 backdrop-blur-sm">
+                        <div className="flex justify-between items-start mb-6 border-b border-[#00FF7F]/10 pb-4">
+                            <h2 className="text-xl font-bold font-mono text-[#00FF7F] tracking-wider">BUSINESS PROTOCOLS</h2>
                             <Link
                                 to="/onboarding"
-                                className="text-[#075e54] hover:underline text-sm font-medium"
+                                className="text-[#00D16B] hover:text-white text-xs font-bold uppercase tracking-wider hover:underline transition-colors"
                             >
-                                Edit Business
+                                [ EDIT CONFIGURATION ]
                             </Link>
                         </div>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">Business Name</label>
-                                <p className="text-gray-800 font-medium">{business.businessName}</p>
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Business Name</label>
+                                    <p className="text-white font-medium">{business.businessName}</p>
+                                </div>
+
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Category</label>
+                                    <p className="text-white">{business.category}</p>
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Description</label>
+                                    <p className="text-[#C8FFC8] text-sm leading-relaxed">{business.description}</p>
+                                </div>
                             </div>
 
                             <div>
-                                <label className="text-sm font-medium text-gray-500">Category</label>
-                                <p className="text-gray-800">{business.category}</p>
-                            </div>
-
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">Description</label>
-                                <p className="text-gray-800">{business.description}</p>
-                            </div>
-
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">Established</label>
-                                <p className="text-gray-800">{business.startYear}</p>
-                            </div>
-
-                            <div>
-                                <label className="text-sm font-medium text-gray-500 block mb-2">Products/Services</label>
+                                <label className="text-xs font-bold text-[#00FF7F]/80 uppercase tracking-wider block mb-3">Active Products/Services</label>
                                 <div className="space-y-3">
                                     {business.products.map((product, index) => (
-                                        <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                                        <div key={index} className="bg-[#0A0F14]/50 border border-[#00FF7F]/10 p-4 rounded-lg hover:border-[#00FF7F]/30 transition-colors">
                                             <div className="flex justify-between items-start">
                                                 <div>
-                                                    <p className="font-medium text-gray-800">{product.name}</p>
+                                                    <p className="font-bold text-[#00D16B] text-sm">{product.name}</p>
                                                     {product.description && (
-                                                        <p className="text-sm text-gray-600 mt-1">{product.description}</p>
+                                                        <p className="text-xs text-gray-400 mt-1">{product.description}</p>
                                                     )}
                                                 </div>
-                                                <span className="text-lg font-bold text-[#075e54]">₹{product.price}</span>
+                                                <span className="text-lg font-bold text-white font-mono">₹{product.price}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -192,44 +192,44 @@ const Dashboard = () => {
 
                     {/* Quick Actions Card */}
                     <div className="space-y-6">
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <h3 className="text-lg font-bold text-gray-800 mb-4">AI Sales Assistant</h3>
+                        <div className="bg-[rgba(10,15,20,0.8)] rounded-xl shadow-[0_0_15px_rgba(0,209,107,0.05)] p-6 border border-[#00D16B]/20 backdrop-blur-sm">
+                            <h3 className="text-lg font-bold font-mono text-[#00D16B] mb-4 tracking-wider">DEPLOYMENT</h3>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-medium text-gray-500 block mb-2">Chat Link</label>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Public Access Link</label>
                                     <div className="flex space-x-2">
                                         <input
                                             type="text"
                                             value={`${window.location.origin}/chat/${business._id}`}
                                             readOnly
-                                            className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm"
+                                            className="flex-1 px-3 py-2 bg-[#0A0F14] border border-[#00D16B]/30 rounded-lg text-xs text-[#C8FFC8] font-mono focus:outline-none"
                                         />
                                         <button
                                             onClick={handleCopyLink}
-                                            className="bg-[#075e54] text-white px-4 py-2 rounded-lg hover:bg-[#128c7e] transition-colors whitespace-nowrap"
+                                            className="bg-[#00D16B]/10 border border-[#00D16B] text-[#00D16B] px-3 py-2 rounded-lg hover:bg-[#00D16B]/20 transition-colors whitespace-nowrap text-xs font-bold uppercase"
                                         >
-                                            {copiedLink ? '✓ Copied!' : 'Copy'}
+                                            {copiedLink ? 'COPIED' : 'COPY'}
                                         </button>
                                     </div>
                                 </div>
 
                                 <Link
                                     to={`/chat/${business._id}`}
-                                    className="block w-full bg-gradient-to-r from-[#075e54] to-[#128c7e] text-white text-center py-3 rounded-lg font-semibold hover:shadow-lg transition-shadow"
+                                    className="block w-full bg-transparent border border-[#00FF7F] text-[#00FF7F] text-center py-3 rounded-lg font-mono font-bold hover:bg-[#00FF7F]/10 hover:shadow-[0_0_15px_#00FF7F] transition-all uppercase tracking-wider text-sm"
                                 >
-                                    Test Chat Interface
+                                    LAUNCH TEST INTERFACE
                                 </Link>
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow p-6 border border-blue-100">
-                            <h3 className="text-lg font-bold text-gray-800 mb-2">WhatsApp Integration</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Connect your business to WhatsApp Cloud API to receive real customer messages.
+                        <div className="bg-[#0A0F14]/50 rounded-xl p-6 border border-gray-700 opacity-75">
+                            <h3 className="text-lg font-bold font-mono text-gray-500 mb-2 tracking-wider">WHATSAPP LINK</h3>
+                            <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+                                Integration with WhatsApp Cloud API is currently locked. Upgrade clearance level to access.
                             </p>
-                            <button className="w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed" disabled>
-                                Coming Soon
+                            <button className="w-full bg-gray-800 text-gray-600 py-2 rounded-lg cursor-not-allowed text-xs font-bold uppercase tracking-wider border border-gray-700" disabled>
+                                SYSTEM LOCKED
                             </button>
                         </div>
                     </div>

@@ -133,24 +133,28 @@ const BusinessOnboarding = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#075e54] to-[#128c7e] py-12 px-4">
-            <div className="max-w-3xl mx-auto">
-                <div className="bg-white rounded-2xl shadow-2xl p-8">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-800">Create Your AI Sales Assistant</h1>
-                        <p className="text-gray-600 mt-2">Set up your business profile to get started</p>
+        <div className="min-h-screen bg-[#0A0F14] py-12 px-4 font-mono relative overflow-hidden">
+            {/* Background Grid */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,127,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,127,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+
+            <div className="max-w-3xl mx-auto relative z-10">
+                <div className="bg-[rgba(10,15,20,0.8)] rounded-xl shadow-[0_0_20px_rgba(0,255,127,0.2)] p-8 border border-[#00FF7F] backdrop-blur-sm">
+                    <div className="mb-8 text-center">
+                        <h1 className="text-4xl font-bold font-mono text-[#00FF7F] tracking-[0.2em] drop-shadow-[0_0_10px_#00FF7F] mb-2 animate-pulse">AGENT-X</h1>
+                        <h2 className="text-xl font-bold font-mono text-white tracking-wider">INITIALIZE BUSINESS</h2>
+                        <p className="text-[#00D16B] mt-2 text-sm tracking-widest uppercase">Configure your AI Sales Assistant Protocol</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
                                 {error}
                             </div>
                         )}
 
                         {/* Owner Name */}
                         <div>
-                            <label htmlFor="ownerName" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="ownerName" className="block text-xs font-bold text-[#00FF7F] mb-2 uppercase tracking-wider">
                                 Your Name <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -161,14 +165,14 @@ const BusinessOnboarding = () => {
                                 required
                                 minLength={2}
                                 maxLength={100}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#075e54] focus:border-transparent outline-none"
+                                className="w-full px-4 py-3 bg-[#0A0F14] border border-[#00FF7F] rounded-lg text-[#C8FFC8] placeholder-[#00D16B]/50 focus:outline-none focus:border-[#00FF7F] focus:shadow-[0_0_10px_#00FF7F] transition-all"
                                 placeholder="e.g., John Doe"
                             />
                         </div>
 
                         {/* Business Name */}
                         <div>
-                            <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="businessName" className="block text-xs font-bold text-[#00FF7F] mb-2 uppercase tracking-wider">
                                 Business Name <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -179,14 +183,14 @@ const BusinessOnboarding = () => {
                                 required
                                 minLength={3}
                                 maxLength={100}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#075e54] focus:border-transparent outline-none"
+                                className="w-full px-4 py-3 bg-[#0A0F14] border border-[#00FF7F] rounded-lg text-[#C8FFC8] placeholder-[#00D16B]/50 focus:outline-none focus:border-[#00FF7F] focus:shadow-[0_0_10px_#00FF7F] transition-all"
                                 placeholder="e.g., Shining Stars Salon"
                             />
                         </div>
 
                         {/* Category */}
                         <div>
-                            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="category" className="block text-xs font-bold text-[#00FF7F] mb-2 uppercase tracking-wider">
                                 Business Category <span className="text-red-500">*</span>
                             </label>
                             <select
@@ -194,18 +198,18 @@ const BusinessOnboarding = () => {
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
                                 required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#075e54] focus:border-transparent outline-none"
+                                className="w-full px-4 py-3 bg-[#0A0F14] border border-[#00FF7F] rounded-lg text-[#C8FFC8] focus:outline-none focus:border-[#00FF7F] focus:shadow-[0_0_10px_#00FF7F] transition-all appearance-none"
                             >
-                                <option value="">Select a category</option>
+                                <option value="" className="bg-[#0A0F14] text-gray-500">Select a category</option>
                                 {categories.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
+                                    <option key={cat} value={cat} className="bg-[#0A0F14] text-[#C8FFC8]">{cat}</option>
                                 ))}
                             </select>
                         </div>
 
                         {/* Description */}
                         <div>
-                            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="description" className="block text-xs font-bold text-[#00FF7F] mb-2 uppercase tracking-wider">
                                 Business Description <span className="text-red-500">*</span>
                             </label>
                             <textarea
@@ -216,15 +220,15 @@ const BusinessOnboarding = () => {
                                 minLength={10}
                                 maxLength={500}
                                 rows={4}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#075e54] focus:border-transparent outline-none resize-none"
+                                className="w-full px-4 py-3 bg-[#0A0F14] border border-[#00FF7F] rounded-lg text-[#C8FFC8] placeholder-[#00D16B]/50 focus:outline-none focus:border-[#00FF7F] focus:shadow-[0_0_10px_#00FF7F] transition-all resize-none"
                                 placeholder="Tell us about your business..."
                             />
-                            <p className="text-xs text-gray-500 mt-1">{description.length}/500 characters</p>
+                            <p className="text-[10px] text-gray-500 mt-1 text-right">{description.length}/500 characters</p>
                         </div>
 
                         {/* WhatsApp Number */}
                         <div>
-                            <label htmlFor="whatsappNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="whatsappNumber" className="block text-xs font-bold text-[#00FF7F] mb-2 uppercase tracking-wider">
                                 WhatsApp Number <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -235,39 +239,39 @@ const BusinessOnboarding = () => {
                                 required
                                 minLength={10}
                                 maxLength={15}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#075e54] focus:border-transparent outline-none"
+                                className="w-full px-4 py-3 bg-[#0A0F14] border border-[#00FF7F] rounded-lg text-[#C8FFC8] placeholder-[#00D16B]/50 focus:outline-none focus:border-[#00FF7F] focus:shadow-[0_0_10px_#00FF7F] transition-all"
                                 placeholder="e.g., 919876543210"
                             />
-                            <p className="text-xs text-gray-500 mt-1">Enter number with country code (without +)</p>
+                            <p className="text-[10px] text-gray-500 mt-1">Enter number with country code (without +)</p>
                         </div>
 
                         {/* Products Section */}
                         <div>
                             <div className="flex justify-between items-center mb-4">
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-xs font-bold text-[#00FF7F] uppercase tracking-wider">
                                     Products/Services <span className="text-red-500">*</span>
                                 </label>
                                 <button
                                     type="button"
                                     onClick={handleAddProduct}
-                                    className="bg-[#075e54] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#128c7e] transition-colors"
+                                    className="bg-transparent border border-[#00FF7F] text-[#00FF7F] px-4 py-2 rounded-lg text-xs font-mono font-bold hover:bg-[#00FF7F]/10 hover:shadow-[0_0_10px_#00FF7F] transition-all"
                                 >
-                                    + Add Product
+                                    + ADD PRODUCT
                                 </button>
                             </div>
 
                             <div className="space-y-4">
                                 {products.map((product, index) => (
-                                    <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                    <div key={index} className="border border-[#00FF7F]/20 rounded-lg p-4 bg-[#0A0F14]/50 backdrop-blur-sm">
                                         <div className="flex justify-between items-center mb-3">
-                                            <h4 className="font-medium text-gray-700">Product #{index + 1}</h4>
+                                            <h4 className="font-bold text-[#00D16B] text-sm tracking-wider">PRODUCT #{index + 1}</h4>
                                             {products.length > 1 && (
                                                 <button
                                                     type="button"
                                                     onClick={() => handleRemoveProduct(index)}
-                                                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                                    className="text-red-400 hover:text-red-300 text-xs font-bold uppercase tracking-wider"
                                                 >
-                                                    Remove
+                                                    REMOVE
                                                 </button>
                                             )}
                                         </div>
@@ -279,12 +283,12 @@ const BusinessOnboarding = () => {
                                                     value={product.name}
                                                     onChange={(e) => handleProductChange(index, 'name', e.target.value)}
                                                     placeholder="Product/Service Name"
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#075e54] focus:border-transparent outline-none"
+                                                    className="w-full px-3 py-2 bg-[#0A0F14] border border-[#00FF7F]/30 rounded-lg text-[#C8FFC8] placeholder-[#00D16B]/50 focus:outline-none focus:border-[#00FF7F] focus:shadow-[0_0_5px_#00FF7F] transition-all text-sm"
                                                 />
                                             </div>
                                             <div>
                                                 <div className="relative">
-                                                    <span className="absolute left-3 top-2 text-gray-500">₹</span>
+                                                    <span className="absolute left-3 top-2 text-[#00FF7F]/60">₹</span>
                                                     <input
                                                         type="number"
                                                         value={product.price}
@@ -292,7 +296,7 @@ const BusinessOnboarding = () => {
                                                         placeholder="Price"
                                                         min={0}
                                                         step="0.01"
-                                                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#075e54] focus:border-transparent outline-none"
+                                                        className="w-full pl-8 pr-3 py-2 bg-[#0A0F14] border border-[#00FF7F]/30 rounded-lg text-[#C8FFC8] placeholder-[#00D16B]/50 focus:outline-none focus:border-[#00FF7F] focus:shadow-[0_0_5px_#00FF7F] transition-all text-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -303,23 +307,23 @@ const BusinessOnboarding = () => {
                         </div>
 
                         {/* Offers & Rules Section */}
-                        <div className="border-t border-gray-200 pt-6">
+                        <div className="border-t border-[#00FF7F]/20 pt-6">
                             <div className="flex items-center justify-between mb-4">
-                                <label className="block text-lg font-medium text-gray-800">
-                                    Offers & Rules
+                                <label className="block text-lg font-mono font-bold text-[#00FF7F] tracking-wider">
+                                    OFFERS & RULES
                                 </label>
                                 <div className="flex items-center">
-                                    <span className="mr-3 text-sm text-gray-600">
-                                        Does your business give offers?
+                                    <span className="mr-3 text-xs text-gray-400 uppercase tracking-wider">
+                                        Enable Offers?
                                     </span>
                                     <button
                                         type="button"
                                         onClick={() => setOffersEnabled(!offersEnabled)}
-                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#075e54] focus:ring-offset-2 ${offersEnabled ? 'bg-[#075e54]' : 'bg-gray-200'
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#00FF7F] focus:ring-offset-2 focus:ring-offset-[#0A0F14] ${offersEnabled ? 'bg-[#00FF7F]' : 'bg-gray-700'
                                             }`}
                                     >
                                         <span
-                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${offersEnabled ? 'translate-x-6' : 'translate-x-1'
+                                            className={`inline-block h-4 w-4 transform rounded-full bg-[#0A0F14] transition-transform ${offersEnabled ? 'translate-x-6' : 'translate-x-1'
                                                 }`}
                                         />
                                     </button>
@@ -328,11 +332,11 @@ const BusinessOnboarding = () => {
 
                             {offersEnabled && (
                                 <div className="space-y-4 animate-fadeIn">
-                                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                                        <p className="text-sm text-blue-800 mb-2 font-medium">
-                                            Write your rules in simple Hinglish. Example:
+                                    <div className="bg-[#00D16B]/5 p-4 rounded-lg border border-[#00D16B]/20">
+                                        <p className="text-xs text-[#00D16B] mb-2 font-bold uppercase tracking-wider">
+                                            Write your rules in simple Hinglish:
                                         </p>
-                                        <p className="text-sm text-blue-600 italic">
+                                        <p className="text-xs text-gray-400 italic font-mono">
                                             "Agar koi 2000 se zyada ka bill banaye toh 10% discount de dena.
                                             Free delivery sirf 5km tak hai.
                                             Protein powder pe koi discount nahi milega."
@@ -343,7 +347,7 @@ const BusinessOnboarding = () => {
                                         value={offersText}
                                         onChange={(e) => setOffersText(e.target.value)}
                                         rows={4}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#075e54] focus:border-transparent outline-none resize-none"
+                                        className="w-full px-4 py-3 bg-[#0A0F14] border border-[#00FF7F]/30 rounded-lg text-[#C8FFC8] placeholder-[#00D16B]/50 focus:outline-none focus:border-[#00FF7F] focus:shadow-[0_0_10px_#00FF7F] transition-all resize-none font-mono text-sm"
                                         placeholder="Enter your offers and rules here..."
                                     />
 
@@ -352,19 +356,19 @@ const BusinessOnboarding = () => {
                                             type="button"
                                             onClick={handleParseRules}
                                             disabled={isParsing || !offersText.trim()}
-                                            className="text-sm text-[#075e54] font-medium hover:underline disabled:opacity-50"
+                                            className="text-xs text-[#00FF7F] font-bold uppercase tracking-wider hover:underline disabled:opacity-50"
                                         >
-                                            {isParsing ? 'Analyzing...' : 'Preview Rules'}
+                                            {isParsing ? 'ANALYZING...' : 'PREVIEW RULES'}
                                         </button>
                                     </div>
 
                                     {parsedRules && (
-                                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm">
-                                            <h4 className="font-semibold text-gray-700 mb-2">AI Understood:</h4>
-                                            <ul className="list-disc list-inside space-y-1 text-gray-600">
-                                                <li>Allowed Freebies: {parsedRules.allowed_freebies?.join(', ') || 'None'}</li>
-                                                <li>Forbidden Items: {parsedRules.forbidden_items?.join(', ') || 'None'}</li>
-                                                <li>Max Discount: {parsedRules.max_discount_percent}% or ₹{parsedRules.max_discount_rupees}</li>
+                                        <div className="bg-[#0A0F14] p-4 rounded-lg border border-[#00FF7F]/30 text-sm shadow-[0_0_10px_rgba(0,255,127,0.05)]">
+                                            <h4 className="font-bold text-[#00FF7F] mb-2 uppercase tracking-wider text-xs">AI Protocol Preview:</h4>
+                                            <ul className="list-disc list-inside space-y-1 text-[#C8FFC8] font-mono text-xs">
+                                                <li><span className="text-[#00D16B]">Allowed Freebies:</span> {parsedRules.allowed_freebies?.join(', ') || 'None'}</li>
+                                                <li><span className="text-red-400">Forbidden Items:</span> {parsedRules.forbidden_items?.join(', ') || 'None'}</li>
+                                                <li><span className="text-[#00FF7F]">Max Discount:</span> {parsedRules.max_discount_percent}% or ₹{parsedRules.max_discount_rupees}</li>
                                             </ul>
                                         </div>
                                     )}
@@ -375,9 +379,9 @@ const BusinessOnboarding = () => {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-[#075e54] text-white py-4 rounded-lg font-semibold text-lg hover:bg-[#128c7e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-transparent border border-[#00FF7F] text-[#00FF7F] py-4 rounded-lg font-mono font-bold text-lg hover:bg-[#00FF7F]/10 hover:shadow-[0_0_20px_#00FF7F] hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
                         >
-                            {isLoading ? 'Creating Business...' : 'Create Business & Start Chat'}
+                            {isLoading ? 'INITIALIZING SYSTEM...' : 'DEPLOY AGENT & START CHAT'}
                         </button>
                     </form>
                 </div>
