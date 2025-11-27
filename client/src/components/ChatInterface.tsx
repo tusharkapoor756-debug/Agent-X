@@ -230,9 +230,10 @@ const ChatInterface: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#E5DDD5]">
+        <div className="flex flex-col h-screen w-full">
             <ChatHeader
                 businessName={business.businessName}
+                assistantName={assistantName}
                 onBack={() => navigate(-1)}
             />
 

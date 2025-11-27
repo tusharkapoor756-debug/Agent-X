@@ -21,7 +21,12 @@ export default function MessageBubble({
                 }`}
         >
             <div className="text-[15px]">{text}</div>
-            <div className="text-[10px] text-gray-500 text-right mt-1">{timestamp}</div>
+            <div className="flex items-center justify-end gap-1 mt-1">
+                <span className="text-[10px] text-gray-500">{timestamp}</span>
+                {sender === "user" && (
+                    <span className="text-blue-600 text-xs">✓✓</span>
+                )}
+            </div>
         </div>
     );
 }
