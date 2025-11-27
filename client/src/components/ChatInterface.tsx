@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ChatHeader from './ChatHeader';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
+import TypingIndicator from './TypingIndicator';
 
 interface Message {
     id: string;
@@ -238,6 +239,7 @@ const ChatInterface: React.FC = () => {
                         timestamp={msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     />
                 ))}
+                {isTyping && <TypingIndicator />}
                 <div ref={messagesEndRef} />
             </div>
 
