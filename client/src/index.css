@@ -17,8 +17,8 @@ body {
 }
 
 .chat-bg {
-  background-image: url('/whatsapp-pattern.png');
-  background-size: 400px;
+  background-image: url('/whatsapp-bg.png');
+  background-size: 300px;
   background-repeat: repeat;
-  opacity: 0.15;
+  opacity: 1;
 }

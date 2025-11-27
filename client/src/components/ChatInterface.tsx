@@ -168,13 +168,6 @@ const ChatInterface: React.FC = () => {
         }
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
-    };
-
     if (loadingBusiness) {
         return (
             <div className="flex items-center justify-center h-screen bg-[#0C0F17]">
@@ -233,11 +226,10 @@ const ChatInterface: React.FC = () => {
         <div className="flex flex-col h-screen w-full">
             <ChatHeader
                 businessName={business.businessName}
-                assistantName={assistantName}
                 onBack={() => navigate(-1)}
             />
 
-            <div className="flex-1 overflow-y-auto p-3 chat-bg flex flex-col gap-2 relative">
+            <div className="flex-1 overflow-y-auto p-3 chat-bg flex flex-col gap-2">
                 {messages.map((msg) => (
                     <MessageBubble
                         key={msg.id}
@@ -253,7 +245,6 @@ const ChatInterface: React.FC = () => {
                 value={inputValue}
                 onChange={setInputValue}
                 onSend={handleSendMessage}
-                onKeyPress={handleKeyPress}
             />
         </div>
     );
