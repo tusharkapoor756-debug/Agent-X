@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import API_URL from '../config';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import ChatHeader from './ChatHeader';
+import MessageBubble from './MessageBubble';
+import ChatInput from './ChatInput';
 
 interface Message {
     id: string;
     text: string;
-    sender: 'user' | 'agent';
+    sender: 'user' | 'agent' | 'ai';
     timestamp: Date;
 }
 
@@ -23,6 +26,7 @@ const assistantNames = [
 
 const ChatInterface: React.FC = () => {
     const { businessId } = useParams<{ businessId: string }>();
+    const navigate = useNavigate();
     const [business, setBusiness] = useState<Business | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
     const [inputName, setInputName] = useState('');
@@ -74,12 +78,31 @@ const ChatInterface: React.FC = () => {
         }
     };
 
+    // Message Saving Logic
+    const saveMessage = async (sender: 'user' | 'agent', content: string) => {
+        if (!businessId) return;
+        try {
+            await fetch(`${API_URL}/save-message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    business_id: businessId,
+                    sender,
+                    content
+                })
+            });
+        } catch (error) {
+            console.error("Failed to save message:", error);
+        }
+    };
+
     const handleSendMessage = async () => {
         if (!inputValue.trim() || !businessId) return;
 
+        const userMessage = inputValue.trim();
         const newMessage: Message = {
             id: Date.now().toString(),
-            text: inputValue,
+            text: userMessage,
             sender: 'user',
             timestamp: new Date(),
         };
@@ -87,6 +110,7 @@ const ChatInterface: React.FC = () => {
         setMessages((prev) => [...prev, newMessage]);
         setInputValue('');
         setIsTyping(true);
+        saveMessage('user', userMessage); // Save user message
 
         try {
             const response = await fetch(`${API_URL}/chat/${businessId}`, {
@@ -95,7 +119,7 @@ const ChatInterface: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    message: inputValue,
+                    message: userMessage,
                     userName: userName,
                     assistantName: assistantName,
                     history: messages
@@ -127,9 +151,9 @@ const ChatInterface: React.FC = () => {
             setTimeout(() => {
                 setMessages((prev) => [...prev, agentResponse]);
                 setIsTyping(false);
+                saveMessage('agent', data.text); // Save AI message
             }, typingDelay);
 
-            return;
         } catch (error) {
             setIsTyping(false);
             console.error('Error sending message:', error);
@@ -153,10 +177,10 @@ const ChatInterface: React.FC = () => {
 
     if (loadingBusiness) {
         return (
-            <div className="flex items-center justify-center h-screen bg-bg-dark">
+            <div className="flex items-center justify-center h-screen bg-[#0C0F17]">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green mx-auto shadow-[0_0_15px_#00F7A5]"></div>
-                    <p className="mt-4 text-neon-green font-orbitron animate-pulse">INITIALIZING...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4F9BFF] mx-auto shadow-[0_0_15px_rgba(79,155,255,0.5)]"></div>
+                    <p className="mt-4 text-[#4F9BFF] font-sans animate-pulse">INITIALIZING...</p>
                 </div>
             </div>
         );
@@ -164,10 +188,10 @@ const ChatInterface: React.FC = () => {
 
     if (businessError || !business) {
         return (
-            <div className="flex items-center justify-center h-screen bg-bg-dark">
-                <div className="glass-panel p-8 rounded-lg shadow-lg max-w-md border border-red-500/50">
-                    <h2 className="text-xl font-orbitron font-bold text-red-500 mb-4 drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]">SYSTEM ERROR</h2>
-                    <p className="text-gray-300 font-inter">{businessError || 'Business not found'}</p>
+            <div className="flex items-center justify-center h-screen bg-[#0C0F17]">
+                <div className="backdrop-blur-md bg-[rgba(20,25,35,0.6)] p-8 rounded-lg shadow-lg max-w-md border border-red-500/50">
+                    <h2 className="text-xl font-bold text-red-500 mb-4 drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]">SYSTEM ERROR</h2>
+                    <p className="text-gray-300 font-sans">{businessError || 'Business not found'}</p>
                 </div>
             </div>
         );
@@ -175,28 +199,28 @@ const ChatInterface: React.FC = () => {
 
     if (!userName) {
         return (
-            <div className="flex items-center justify-center h-screen bg-bg-dark">
-                <div className="glass-panel p-8 rounded-lg shadow-[0_0_20px_rgba(0,247,165,0.1)] w-96 border border-neon-green/30">
+            <div className="flex items-center justify-center h-screen bg-[#0C0F17]">
+                <div className="backdrop-blur-md bg-[rgba(20,25,35,0.6)] p-8 rounded-2xl shadow-[0_0_20px_rgba(79,155,255,0.1)] w-96 border border-[rgba(79,155,255,0.2)]">
                     <div className="flex justify-center mb-6">
-                        <div className="w-20 h-20 rounded-full bg-bg-dark border-2 border-neon-green flex items-center justify-center text-neon-green font-orbitron font-bold text-2xl shadow-[0_0_15px_#00F7A5]">
+                        <div className="w-20 h-20 rounded-full bg-[#0C0F17] border-2 border-[#4F9BFF] flex items-center justify-center text-[#4F9BFF] font-bold text-2xl shadow-[0_0_15px_rgba(79,155,255,0.3)]">
                             {business.businessName.substring(0, 2).toUpperCase()}
                         </div>
                     </div>
-                    <h1 className="text-2xl font-orbitron font-bold text-center text-neon-green mb-2 tracking-wider drop-shadow-[0_0_5px_#00F7A5]">{business.businessName}</h1>
-                    <p className="text-center text-neon-cyan/80 mb-2 font-inter text-sm tracking-widest uppercase">{business.category}</p>
-                    <p className="text-center text-gray-400 mb-6 font-inter text-sm">Identify yourself to proceed.</p>
+                    <h1 className="text-2xl font-bold text-center text-[#4F9BFF] mb-2 tracking-wider drop-shadow-[0_0_5px_rgba(79,155,255,0.5)]">{business.businessName}</h1>
+                    <p className="text-center text-[#9F70FF] mb-2 font-sans text-sm tracking-widest uppercase">{business.category}</p>
+                    <p className="text-center text-gray-400 mb-6 font-sans text-sm">Identify yourself to proceed.</p>
                     <input
                         type="text"
                         value={inputName}
                         onChange={(e) => setInputName(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleStartChat()}
                         placeholder="ENTER YOUR NAME"
-                        className="w-full p-3 bg-bg-dark border border-neon-green/50 rounded-lg mb-4 text-white placeholder-gray-600 focus:outline-none focus:border-neon-green focus:shadow-[0_0_10px_#00F7A5] transition-all font-inter"
+                        className="w-full p-3 bg-[#111621] border border-[#4F9BFF]/50 rounded-lg mb-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#4F9BFF] focus:shadow-[0_0_10px_rgba(79,155,255,0.3)] transition-all font-sans"
                     />
                     <button
                         onClick={handleStartChat}
                         disabled={!inputName.trim()}
-                        className="w-full bg-transparent border border-neon-green text-neon-green p-3 rounded-lg font-orbitron font-bold hover:bg-neon-green/10 hover:scale-105 hover:shadow-[0_0_15px_#00F7A5] transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
+                        className="w-full bg-transparent border border-[#4F9BFF] text-[#4F9BFF] p-3 rounded-lg font-bold hover:bg-[#4F9BFF]/10 hover:scale-105 hover:shadow-[0_0_15px_rgba(79,155,255,0.3)] transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
                     >
                         INITIATE CHAT
                     </button>
@@ -206,71 +230,30 @@ const ChatInterface: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-bg-dark font-inter">
-            {/* Header */}
-            <div className="bg-bg-dark/90 backdrop-blur-md p-4 flex flex-col items-center border-b border-neon-green/30 shadow-[0_0_15px_rgba(0,247,165,0.1)] z-10 relative">
-                <h1 className="text-3xl font-orbitron font-bold text-neon-green tracking-[0.2em] animate-pulse-glow drop-shadow-[0_0_10px_#00F7A5]">
-                    AGENT-X
-                </h1>
-                <div className="flex items-center mt-2 space-x-2">
-                    <div className="w-2 h-2 rounded-full bg-neon-green animate-pulse shadow-[0_0_5px_#00F7A5]"></div>
-                    <p className="text-neon-cyan/80 text-xs tracking-widest uppercase">
-                        {business.businessName} • {assistantName}
-                    </p>
-                </div>
-            </div>
+        <div className="flex flex-col h-full w-full bg-[#E5DDD5]">
+            <ChatHeader
+                businessName={business.businessName}
+                onBack={() => navigate(-1)}
+            />
 
-            {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-[rgba(10,15,20,0.8)] border border-[#00FF7F] shadow-[0_0_8px_#00FF7F] rounded-xl backdrop-blur-sm m-4 relative">
-
+            <div className="flex-1 overflow-y-auto p-3 chat-bg flex flex-col gap-2 relative">
                 {messages.map((msg) => (
-                    <div
+                    <MessageBubble
                         key={msg.id}
-                        className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} relative z-10`}
-                    >
-                        <div
-                            className={`max-w-[80%] p-4 rounded-xl backdrop-blur-sm ${msg.sender === 'user'
-                                ? 'bg-[#00FF7F] text-black'
-                                : 'bg-transparent border border-[#00FF7F] text-[#00FF7F]'
-                                }`}
-                        >
-                            <p className="text-sm leading-relaxed font-mono">{msg.text}</p>
-                            <span className={`text-[10px] block text-right mt-2 font-mono ${msg.sender === 'user' ? 'text-black/60' : 'text-[#00FF7F]/60'}`}>
-                                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                        </div>
-                    </div>
+                        sender={msg.sender}
+                        text={msg.text}
+                        timestamp={msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    />
                 ))}
-
-                {isTyping && (
-                    <div className="flex justify-start relative z-10">
-                        <div className="text-[#00FF7F] animate-pulse text-xl">|</div>
-                    </div>
-                )}
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="bg-bg-dark p-4 border-t border-neon-green/20 shadow-[0_-5px_20px_rgba(0,0,0,0.5)] z-10">
-                <div className="flex items-center space-x-3 max-w-4xl mx-auto">
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={handleKeyPress}
-                        placeholder="Enter command..."
-                        className="flex-1 py-3 px-6 rounded-full bg-bg-dark border border-neon-green/30 text-white placeholder-gray-600 focus:outline-none focus:border-neon-green focus:shadow-[0_0_15px_rgba(0,247,165,0.3)] transition-all font-inter"
-                    />
-                    <button
-                        onClick={handleSendMessage}
-                        className="p-3 rounded-full bg-transparent border border-neon-green text-neon-green hover:bg-neon-green/10 hover:shadow-[0_0_15px_#00F7A5] hover:scale-110 transition-all duration-300 flex items-center justify-center group"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 group-hover:drop-shadow-[0_0_5px_#00F7A5]">
-                            <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            <ChatInput
+                value={inputValue}
+                onChange={setInputValue}
+                onSend={handleSendMessage}
+                onKeyPress={handleKeyPress}
+            />
         </div>
     );
 };

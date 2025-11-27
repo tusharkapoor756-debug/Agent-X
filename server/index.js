@@ -199,4 +199,32 @@ if (require.main === module) {
     });
 }
 
+// @route   POST /save-message
+// @desc    Save chat message to Supabase
+// @access  Public
+app.post("/save-message", async (req, res) => {
+    const { business_id, sender, content } = req.body;
+
+    try {
+        const { data, error } = await supabase
+            .from("messages")
+            .insert({
+                business_id,
+                sender,
+                message: content, // Mapping content to message column as per schema
+                created_at: new Date().toISOString(),
+            });
+
+        if (error) {
+            console.error("Supabase message save error:", error);
+            return res.status(500).json({ error });
+        }
+
+        res.json({ success: true, data });
+    } catch (err) {
+        console.error("Server error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = app;
