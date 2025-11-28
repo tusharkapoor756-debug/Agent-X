@@ -51,7 +51,7 @@ const ChatInterface: React.FC = () => {
 
     const fetchBusinessData = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/business/${businessId}/public`);
+            const response = await fetch(`${API_URL}/business/${businessId}/public`);
             const data = await response.json();
 
             if (data.success) {
@@ -86,7 +86,7 @@ const ChatInterface: React.FC = () => {
         console.log("Saving:", sender, content); // DEBUG LOG
 
         try {
-            await fetch(`${API_URL}/api/save-message`, {
+            await fetch(`${API_URL}/save-message`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -118,7 +118,8 @@ const ChatInterface: React.FC = () => {
         await saveMessage('user', userMessage); // Save user message
 
         try {
-            const response = await fetch(`${API_URL}/api/chat/${businessId}`, {
+            const response = await fetch(`${API_URL}/api/business/${businessId}/public`)
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
