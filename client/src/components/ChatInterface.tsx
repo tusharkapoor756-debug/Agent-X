@@ -175,21 +175,25 @@ const ChatInterface: React.FC = () => {
 
     if (!userName) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 pt-20">
-                <h1 className="text-2xl text-white mb-4 font-semibold">{business.businessName}</h1>
-                <input
-                    type="text"
-                    placeholder="Enter your name"
-                    className="px-4 py-2 mb-4 w-64 rounded bg-gray-800 text-white placeholder-gray-400 border border-gray-600"
-                    value={inputName}
-                    onChange={(e) => setInputName(e.target.value)}
-                />
-                <button
-                    onClick={handleStartChat}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
-                >
-                    Start Chat
-                </button>
+            <div className="flex items-center justify-center min-h-screen bg-gray-900">
+                <div className="bg-gray-800 p-8 rounded-xl shadow-xl w-[350px]">
+                    <h1 className="text-center text-2xl font-semibold text-white mb-6">{business.businessName}</h1>
+
+                    <input
+                        type="text"
+                        placeholder="Enter your name"
+                        className="w-full mb-4 px-4 py-2 rounded bg-gray-700 text-white placeholder-gray-400 border border-gray-600"
+                        value={inputName}
+                        onChange={(e) => setInputName(e.target.value)}
+                    />
+
+                    <button
+                        onClick={handleStartChat}
+                        className="w-full bg-blue-600 hover:bg-blue-700 py-2 text-white rounded"
+                    >
+                        Start Chat
+                    </button>
+                </div>
             </div>
         );
     }
@@ -198,7 +202,7 @@ const ChatInterface: React.FC = () => {
         <div className="flex flex-col h-screen w-full">
             <ChatHeader businessName={business.businessName} onBack={() => navigate(-1)} />
 
-            <div className="flex-1 overflow-y-auto chat-bg p-4 flex flex-col space-y-3">
+            <div className="p-4 flex flex-col space-y-3 bg-[#ECE5DD] flex-1 overflow-y-auto">
                 {messages.map((msg) => (
                     <MessageBubble
                         key={msg.id}
