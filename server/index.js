@@ -202,7 +202,7 @@ if (require.main === module) {
 // @route   POST /save-message
 // @desc    Save chat message to Supabase
 // @access  Public
-app.post("/save-message", async (req, res) => {
+app.post("/api/save-message", async (req, res) => {
     const { business_id, sender, content, timestamp } = req.body;
 
     console.log("SAVE HIT:", req.body); // DEBUG LOG
