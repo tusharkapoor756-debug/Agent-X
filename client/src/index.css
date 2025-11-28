@@ -41,7 +41,7 @@ body::before {
 .typing-dot {
   width: 6px;
   height: 6px;
-  background: #4F9BFF;
+  background: #c7c7c7;
   border-radius: 50%;
   display: inline-block;
   animation: bounce 1.4s infinite ease-in-out both;

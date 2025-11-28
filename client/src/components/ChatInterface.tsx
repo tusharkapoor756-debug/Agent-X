@@ -70,6 +70,12 @@ const ChatInterface: React.FC = () => {
 
     useEffect(scrollToBottom, [messages, isTyping]);
 
+    const handleStartChat = () => {
+        if (inputName.trim()) {
+            setUserName(inputName.trim());
+        }
+    };
+
     // SAVE MESSAGE
     const saveMessage = async (sender: 'user' | 'agent', content: string) => {
         if (!businessId) return;
@@ -169,17 +175,18 @@ const ChatInterface: React.FC = () => {
 
     if (!userName) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen text-white">
-                <h2 className="mb-4 text-xl">{business.businessName}</h2>
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 pt-20">
+                <h1 className="text-2xl text-white mb-4 font-semibold">{business.businessName}</h1>
                 <input
+                    type="text"
+                    placeholder="Enter your name"
+                    className="px-4 py-2 mb-4 w-64 rounded bg-gray-800 text-white placeholder-gray-400 border border-gray-600"
                     value={inputName}
                     onChange={(e) => setInputName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="p-2 mb-3 text-black"
                 />
                 <button
-                    onClick={() => inputName.trim() && setUserName(inputName.trim())}
-                    className="px-4 py-2 bg-blue-500 rounded"
+                    onClick={handleStartChat}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
                 >
                     Start Chat
                 </button>
@@ -191,7 +198,7 @@ const ChatInterface: React.FC = () => {
         <div className="flex flex-col h-screen w-full">
             <ChatHeader businessName={business.businessName} onBack={() => navigate(-1)} />
 
-            <div className="flex-1 overflow-y-auto p-3 chat-bg flex flex-col gap-2">
+            <div className="flex-1 overflow-y-auto chat-bg p-4 flex flex-col space-y-3">
                 {messages.map((msg) => (
                     <MessageBubble
                         key={msg.id}
