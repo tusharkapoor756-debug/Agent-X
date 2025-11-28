@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -21,15 +20,11 @@ app.use('/api/auth', authRoutes);
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Log startup status
 console.log('🔑 Gemini API Key:', process.env.GEMINI_API_KEY ? '✅ Loaded' : '❌ Missing');
 console.log('💾 Supabase URL:', process.env.SUPABASE_URL ? '✅ Loaded' : '❌ Missing');
 
-// @route   POST /api/chat/:businessId
-// @desc    Chat with business AI assistant
-// @access  Public
 // @route   POST /api/chat/:businessId
 // @desc    Chat with business AI assistant
 // @access  Public
@@ -85,7 +80,7 @@ app.post('/api/chat/:businessId', async (req, res) => {
         // Build dynamic prompt with offer rules
         const systemPrompt = buildPrompt(business, assistantName, userName, businessData.offer_rules_json);
 
-        // Initialize model with system instruction (Better adherence to rules)
+        // Initialize model with system instruction
         const model = genAI.getGenerativeModel({
             model: "gemini-2.0-flash",
             systemInstruction: systemPrompt
@@ -98,7 +93,6 @@ app.post('/api/chat/:businessId', async (req, res) => {
             },
         });
 
-        // Send message (System prompt is now handled by systemInstruction)
         // Anti-repetition logic: Get last assistant message
         let lastAssistantMessage = "";
         if (history && history.length > 0) {
@@ -115,55 +109,66 @@ app.post('/api/chat/:businessId', async (req, res) => {
             finalMessage = `${message}\n\n(SYSTEM NOTE: Your last reply was: "${lastAssistantMessage}". You MUST NOT repeat this exact wording or meaning. Say something new.)`;
         }
 
-        const result = await chat.sendMessage(finalMessage);
-        const response = await result.response;
-        let text = response.text();
+        try {
+            const result = await chat.sendMessage(finalMessage);
 
-        // ---------------------------------------------------------
-        // POST-GENERATION OFFER ENFORCEMENT
-        // ---------------------------------------------------------
-        let ruleViolation = false;
-        if (businessData.offers_enabled && businessData.offer_rules_json) {
-            const rules = businessData.offer_rules_json;
-            const lowerText = text.toLowerCase();
+            // Robust response extraction with multiple fallbacks
+            const aiResponse =
+                result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+                (typeof result?.response?.text === 'function' ? result.response.text() : null) ||
+                result?.response?.content?.[0]?.text ||
+                "I'm here to help! Could you repeat that?";
 
-            // Check 1: Forbidden Items
-            if (rules.forbidden_items && rules.forbidden_items.length > 0) {
-                for (const item of rules.forbidden_items) {
-                    // If text mentions forbidden item AND (free OR discount)
-                    if (lowerText.includes(item.toLowerCase()) &&
-                        (lowerText.includes("free") || lowerText.includes("discount") || lowerText.includes("muft"))) {
+            let text = aiResponse;
 
-                        console.log(`⚠️ Rule Violation: AI offered discount on forbidden item '${item}'`);
-                        text = `I apologize, but we do not offer discounts or freebies on ${item}. However, I can check our best prices for you!`;
-                        ruleViolation = true;
-                        break;
+            // POST-GENERATION OFFER ENFORCEMENT
+            let ruleViolation = false;
+            if (businessData.offers_enabled && businessData.offer_rules_json) {
+                const rules = businessData.offer_rules_json;
+                const lowerText = text.toLowerCase();
+
+                if (rules.forbidden_items && rules.forbidden_items.length > 0) {
+                    for (const item of rules.forbidden_items) {
+                        if (lowerText.includes(item.toLowerCase()) &&
+                            (lowerText.includes("free") || lowerText.includes("discount") || lowerText.includes("muft"))) {
+
+                            console.log(`⚠️ Rule Violation: AI offered discount on forbidden item '${item}'`);
+                            text = `I apologize, but we do not offer discounts or freebies on ${item}. However, I can check our best prices for you!`;
+                            ruleViolation = true;
+                            break;
+                        }
                     }
                 }
             }
+
+            // Save message to database
+            await supabase.from('messages').insert([
+                { business_id: businessId, sender: 'user', message: message },
+                { business_id: businessId, sender: 'agent', message: text, rule_violation: ruleViolation }
+            ]);
+
+            // Check for lead handoff trigger
+            if (text.toLowerCase().includes("connect you with") ||
+                text.toLowerCase().includes("transfer") ||
+                text.toLowerCase().includes("owner") ||
+                text.toLowerCase().includes("team for payment")) {
+                console.log(`🚨 HIGH-VALUE LEAD: ${userName || 'Unknown'} - Business: ${business.businessName} - Message: "${message}"`);
+            }
+
+            res.json({
+                text,
+                assistantName
+            });
+        } catch (geminiError) {
+            console.error('Gemini API error:', geminiError);
+            // Return friendly message instead of error
+            res.json({
+                text: "Sorry, I'm having trouble understanding right now. Could you please try again?",
+                assistantName
+            });
         }
-        // ---------------------------------------------------------
-
-        // Save message to database
-        await supabase.from('messages').insert([
-            { business_id: businessId, sender: 'user', message: message },
-            { business_id: businessId, sender: 'agent', message: text, rule_violation: ruleViolation } // Assuming we add rule_violation column later or it ignores extra fields
-        ]);
-
-        // Check for lead handoff trigger
-        if (text.toLowerCase().includes("connect you with") ||
-            text.toLowerCase().includes("transfer") ||
-            text.toLowerCase().includes("owner") ||
-            text.toLowerCase().includes("team for payment")) {
-            console.log(`🚨 HIGH-VALUE LEAD: ${userName || 'Unknown'} - Business: ${business.businessName} - Message: "${message}"`);
-        }
-
-        res.json({
-            text,
-            assistantName
-        });
     } catch (error) {
-        console.error('Error calling Gemini:', error);
+        console.error('Error in chat route:', error);
         res.status(500).json({ error: 'Failed to generate response' });
     }
 });
@@ -171,7 +176,6 @@ app.post('/api/chat/:businessId', async (req, res) => {
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
     try {
-        // Test Supabase connection
         const { error } = await supabase
             .from('business_profile')
             .select('count')
@@ -198,13 +202,13 @@ if (require.main === module) {
     });
 }
 
-// @route   POST /save-message
+// @route   POST /api/save-message
 // @desc    Save chat message to Supabase
 // @access  Public
 app.post("/api/save-message", async (req, res) => {
     const { business_id, sender, content, timestamp } = req.body;
 
-    console.log("SAVE HIT:", req.body); // DEBUG LOG
+    console.log("SAVE HIT:", req.body);
 
     if (!business_id || !sender || !content) {
         return res.status(400).json({ error: "Missing fields" });
