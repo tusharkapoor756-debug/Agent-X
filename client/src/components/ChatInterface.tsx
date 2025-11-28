@@ -95,6 +95,68 @@ const ChatInterface: React.FC = () => {
         }
     };
 
+    // ===========================
+    // HUMAN-LIKE TYPING DELAY FUNCTION
+    // ===========================
+    const calculateTypingDelay = (text: string): number => {
+        if (!text) return 400; // safety fallback
+
+        const words = text.trim().split(/\s+/).length;
+        let delayPerWord;
+
+        if (words <= 4) {
+            delayPerWord = 80 + Math.random() * 40;   // 80–120ms (short)
+        } else if (words <= 15) {
+            delayPerWord = 120 + Math.random() * 60;  // 120–180ms (normal)
+        } else {
+            delayPerWord = 180 + Math.random() * 70;  // 180–250ms (long)
+        }
+
+        let total = words * delayPerWord;
+
+        // total delay boundaries
+        total = Math.max(300, Math.min(total, 2500));
+
+        return total;
+    };
+
+    // ===========================
+    // STRICT AI MESSAGE HANDLER - NO TEXT MODIFICATION
+    // RULES:
+    // 1. AI response text MUST NOT be changed.
+    // 2. No auto-formatting, rewriting, or corrections.
+    // 3. Whitespace trim allowed, but text content untouched.
+    // 4. Message only added AFTER delay.
+    // 5. Typing indicator ON immediately, OFF only after delay.
+    // ===========================
+    const handleAIResponse = async (aiReply: string) => {
+        // Safety fallback - DO NOT MODIFY AI TEXT
+        let finalText = aiReply;
+        if (!aiReply || typeof aiReply !== "string" || aiReply.trim() === "") {
+            finalText = "I'm having trouble understanding. Please try again.";
+        }
+
+        const delay = calculateTypingDelay(finalText);
+
+        // Show typing dots NOW
+        setIsTyping(true);
+
+        setTimeout(async () => {
+            setIsTyping(false);
+
+            // Add AI message EXACTLY as received - NO MODIFICATIONS
+            const agentMessage: Message = {
+                id: `${Date.now()}`,
+                text: finalText,
+                sender: "agent",
+                timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, agentMessage]);
+            await saveMessage('agent', finalText);
+        }, delay);
+    };
+
     // SEND MESSAGE
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return;
@@ -110,7 +172,6 @@ const ChatInterface: React.FC = () => {
 
         setMessages((prev) => [...prev, newMessage]);
         setInputValue('');
-        setIsTyping(true);
 
         await saveMessage('user', userText);
 
@@ -131,19 +192,8 @@ const ChatInterface: React.FC = () => {
 
             const data = await response.json();
 
-            const agentMessage: Message = {
-                id: `${Date.now() + 1}`,
-                text: data.text,
-                sender: "agent",
-                timestamp: new Date(),
-            };
-
-            setTimeout(async () => {
-                setMessages((prev) => [...prev, agentMessage]);
-                setIsTyping(false);
-
-                await saveMessage('agent', data.text);
-            }, 1200);
+            // Use human-like typing delay handler - STRICT: NO TEXT MODIFICATION
+            await handleAIResponse(data.text);
 
         } catch (err) {
             setIsTyping(false);
