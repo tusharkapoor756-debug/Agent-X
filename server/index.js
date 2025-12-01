@@ -123,7 +123,10 @@ app.post('/api/chat/:businessId', async (req, res) => {
         const assistantName = clientAssistantName || getRandomAssistantName();
 
         // Build dynamic prompt with offer rules
-        const systemPrompt = buildPrompt(business, assistantName, userName, businessData.offer_rules_json);
+        let systemPrompt = buildPrompt(business, assistantName, userName, businessData.offer_rules_json);
+
+        // ENFORCE BRANDED ASSISTANT IDENTITY
+        systemPrompt += `\n\nCRITICAL INSTRUCTION: You are the official sales assistant of ${business.businessName}. NEVER say "I am your assistant" or "I am an AI". ALWAYS identify yourself as the assistant of ${business.businessName}. You work for the business only.`;
 
         // Initialize model with system instruction
         const model = genAI.getGenerativeModel({

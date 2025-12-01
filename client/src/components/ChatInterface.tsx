@@ -33,6 +33,7 @@ const ChatInterface: React.FC = () => {
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [inputName, setInputName] = useState('');
     const [inputNumber, setInputNumber] = useState('');
+    const [inputError, setInputError] = useState('');
     const [loadingBusiness, setLoadingBusiness] = useState(true);
     const [businessError, setBusinessError] = useState('');
 
@@ -73,14 +74,16 @@ const ChatInterface: React.FC = () => {
     useEffect(scrollToBottom, [messages, isTyping]);
 
     const handleStartChat = async () => {
-        if (!inputName.trim() || !inputNumber.trim()) {
-            alert('Please enter both name and phone number');
+        setInputError('');
+
+        if (!inputName.trim() || inputName.trim().length < 2) {
+            setInputError('Please enter a valid name (min 2 chars)');
             return;
         }
 
         const phoneRegex = /^\d{10}$/;
         if (!phoneRegex.test(inputNumber.trim())) {
-            alert('Please enter a valid 10-digit phone number');
+            setInputError('Please enter a valid 10-digit phone number');
             return;
         }
 
@@ -102,23 +105,49 @@ const ChatInterface: React.FC = () => {
                 setUserName(inputName.trim());
                 setUserNumber(inputNumber.trim());
             } else {
-                alert('Failed to start conversation');
+                setInputError('Failed to start conversation. Please try again.');
             }
         } catch (error) {
             console.error('Error starting conversation:', error);
-            alert('Network error. Please try again.');
+            setInputError('Network error. Please try again.');
         }
     };
 
     const saveMessage = async (sender: 'user' | 'agent', content: string) => {
-        if (!businessId || !conversationId || !userName || !userNumber) return;
+        if (!businessId || !userName || !userNumber) return;
+
+        // Ensure conversationId exists
+        let currentConvId = conversationId;
+        if (!currentConvId) {
+            try {
+                const response = await fetch(`${API_URL}/conversation/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        business_id: businessId,
+                        user_name: userName,
+                        user_number: userNumber
+                    })
+                });
+                const data = await response.json();
+                if (data.conversation_id) {
+                    currentConvId = data.conversation_id;
+                    setConversationId(data.conversation_id);
+                }
+            } catch (e) {
+                console.error("Failed to recover conversation ID", e);
+            }
+        }
+
+        if (!currentConvId) return;
+
         try {
             await fetch(`${API_URL}/save-message`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     business_id: businessId,
-                    conversation_id: conversationId,
+                    conversation_id: currentConvId,
                     user_name: userName,
                     user_number: userNumber,
                     sender,
@@ -132,23 +161,15 @@ const ChatInterface: React.FC = () => {
     };
 
     const calculateTypingDelay = (text: string): number => {
-        if (!text) return 400;
+        // Enforce 1.5 - 3 seconds delay
+        const minDelay = 1500;
+        const maxDelay = 3000;
 
+        // Calculate based on length but clamp to range
         const words = text.trim().split(/\s+/).length;
-        let delayPerWord;
+        let calculated = words * 150;
 
-        if (words <= 4) {
-            delayPerWord = 80 + Math.random() * 40;
-        } else if (words <= 15) {
-            delayPerWord = 120 + Math.random() * 60;
-        } else {
-            delayPerWord = 180 + Math.random() * 70;
-        }
-
-        let total = words * delayPerWord;
-        total = Math.max(300, Math.min(total, 2500));
-
-        return total;
+        return Math.max(minDelay, Math.min(calculated, maxDelay));
     };
 
     const handleAIResponse = async (aiReply: string) => {
@@ -258,12 +279,16 @@ const ChatInterface: React.FC = () => {
 
                     <input
                         type="tel"
-                        placeholder="Enter phone number"
+                        placeholder="Enter phone number (10 digits)"
                         className="w-full mb-4 px-4 py-2 rounded bg-gray-700 text-white placeholder-gray-400 border border-gray-600"
                         value={inputNumber}
                         onChange={(e) => setInputNumber(e.target.value.replace(/\D/g, ''))}
                         maxLength={10}
                     />
+
+                    {inputError && (
+                        <p className="text-red-500 text-sm mb-4 text-center">{inputError}</p>
+                    )}
 
                     <button
                         onClick={handleStartChat}
