@@ -53,7 +53,6 @@ const ChatInterface: React.FC = () => {
 
     const fetchBusinessData = async () => {
         try {
-            // Corrected fetch URL for business data
             const response = await fetch(`${API_URL}/business/${businessId}/public`);
             const data = await response.json();
 
@@ -117,7 +116,6 @@ const ChatInterface: React.FC = () => {
     const saveMessage = async (sender: 'user' | 'agent', content: string) => {
         if (!businessId || !userName || !userNumber) return;
 
-        // Ensure conversationId exists
         let currentConvId = conversationId;
         if (!currentConvId) {
             try {
@@ -162,14 +160,10 @@ const ChatInterface: React.FC = () => {
     };
 
     const calculateTypingDelay = (text: string): number => {
-        // Enforce 1.5 - 3 seconds delay
         const minDelay = 1500;
         const maxDelay = 3000;
-
-        // Calculate based on length but clamp to range
         const words = text.trim().split(/\s+/).length;
         let calculated = words * 150;
-
         return Math.max(minDelay, Math.min(calculated, maxDelay));
     };
 
@@ -194,22 +188,7 @@ const ChatInterface: React.FC = () => {
             };
 
             setMessages((prev) => [...prev, agentMessage]);
-            // Note: AI message is already saved by the backend in the new logic, 
-            // but we can keep this for redundancy if backend saving fails, 
-            // OR remove it to avoid duplicates if backend is reliable.
-            // Given the instruction "Ensure messages save 100% of the time", 
-            // and backend now saves it, we should rely on backend for the source of truth,
-            // but the frontend state needs to be updated.
-            // However, the prompt asked to update saveMessage to include all fields.
-            // To be safe and follow "Ensure messages save 100%", we will keep this 
-            // but ideally backend handles it. 
-            // Actually, the backend instruction said "Save AI message AFTER generating response".
-            // So backend saves it. We shouldn't double save. 
-            // BUT, the prompt also said "Fix ChatInterface saveMessage(): MUST send all fields above."
-            // I will leave this here as a fallback/UI confirmation, but backend is primary.
-            // Wait, if backend saves it, and we save it here, we get duplicates.
-            // I will comment it out to avoid duplicates since backend does it now.
-            // await saveMessage('agent', finalText); 
+            // Backend saves AI message, so we don't need to call saveMessage here to avoid duplicates
         }, delay);
     };
 
@@ -228,13 +207,7 @@ const ChatInterface: React.FC = () => {
         setMessages((prev) => [...prev, newMessage]);
         setInputValue('');
 
-        // Backend now saves user message too in /api/chat
-        // But we need to save it if we want it to appear immediately even if chat API fails?
-        // The instruction said "Save user message BEFORE generating AI response" in backend.
-        // So backend handles saving.
-        // However, for immediate UI feedback, we show it.
-        // We will NOT call saveMessage here to avoid duplicates since backend does it.
-        // await saveMessage('user', userText);
+        // Backend saves user message in /api/chat, so we don't call saveMessage here
 
         try {
             const response = await fetch(`${API_URL}/chat/${businessId}`, {
