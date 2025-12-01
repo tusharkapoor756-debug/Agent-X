@@ -25,12 +25,57 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 console.log('🔑 Gemini API Key:', process.env.GEMINI_API_KEY ? '✅ Loaded' : '❌ Missing');
 console.log('💾 Supabase URL:', process.env.SUPABASE_URL ? '✅ Loaded' : '❌ Missing');
 
+// @route   POST /api/conversation/start
+// @desc    Start or retrieve conversation
+// @access  Public
+app.post('/api/conversation/start', async (req, res) => {
+    try {
+        const { business_id, user_name, user_number } = req.body;
+
+        if (!business_id || !user_name || !user_number) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Check if conversation already exists for this user and business
+        const { data: existingConv, error: checkError } = await supabase
+            .from('messages')
+            .select('conversation_id')
+            .eq('business_id', business_id)
+            .eq('user_number', user_number)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (checkError) {
+            console.error('Error checking conversation:', checkError);
+        }
+
+        if (existingConv && existingConv.length > 0) {
+            return res.json({
+                conversation_id: existingConv[0].conversation_id,
+                existing: true
+            });
+        }
+
+        // Generate new conversation_id
+        const conversation_id = `conv_${business_id}_${Date.now()}`;
+
+        res.json({
+            conversation_id,
+            existing: false
+        });
+
+    } catch (error) {
+        console.error('Error in conversation start:', error);
+        res.status(500).json({ error: 'Failed to start conversation' });
+    }
+});
+
 // @route   POST /api/chat/:businessId
 // @desc    Chat with business AI assistant
 // @access  Public
 app.post('/api/chat/:businessId', async (req, res) => {
     try {
-        const { message, history, userName, assistantName: clientAssistantName } = req.body;
+        const { message, history, userName, assistantName: clientAssistantName, conversation_id, user_number } = req.body;
         const { businessId } = req.params;
 
         if (!process.env.GEMINI_API_KEY) {
@@ -141,11 +186,41 @@ app.post('/api/chat/:businessId', async (req, res) => {
                 }
             }
 
-            // Save message to database
-            await supabase.from('messages').insert([
-                { business_id: businessId, sender: 'user', message: message },
-                { business_id: businessId, sender: 'agent', message: text, rule_violation: ruleViolation }
-            ]);
+            // Save messages with conversation tracking if conversation_id provided
+            if (conversation_id && userName && user_number) {
+                // Get current sequence number
+                const { data: lastMsg } = await supabase
+                    .from('messages')
+                    .select('sequence_number')
+                    .eq('conversation_id', conversation_id)
+                    .order('sequence_number', { ascending: false })
+                    .limit(1);
+
+                const nextSequence = lastMsg && lastMsg.length > 0 ? lastMsg[0].sequence_number + 1 : 1;
+
+                await supabase.from('messages').insert([
+                    {
+                        business_id: businessId,
+                        conversation_id: conversation_id,
+                        user_name: userName,
+                        user_number: user_number,
+                        sender: 'user',
+                        content: message,
+                        sequence_number: nextSequence,
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        business_id: businessId,
+                        conversation_id: conversation_id,
+                        user_name: userName,
+                        user_number: user_number,
+                        sender: 'agent',
+                        content: text,
+                        sequence_number: nextSequence + 1,
+                        timestamp: new Date().toISOString()
+                    }
+                ]);
+            }
 
             // Check for lead handoff trigger
             if (text.toLowerCase().includes("connect you with") ||
@@ -161,7 +236,6 @@ app.post('/api/chat/:businessId', async (req, res) => {
             });
         } catch (geminiError) {
             console.error('Gemini API error:', geminiError);
-            // Return friendly message instead of error
             res.json({
                 text: "Sorry, I'm having trouble understanding right now. Could you please try again?",
                 assistantName
@@ -170,6 +244,52 @@ app.post('/api/chat/:businessId', async (req, res) => {
     } catch (error) {
         console.error('Error in chat route:', error);
         res.status(500).json({ error: 'Failed to generate response' });
+    }
+});
+
+// @route   POST /api/save-message
+// @desc    Save chat message to Supabase with conversation tracking
+// @access  Public
+app.post("/api/save-message", async (req, res) => {
+    const { business_id, conversation_id, user_name, user_number, sender, content, timestamp } = req.body;
+
+    if (!business_id || !conversation_id || !user_name || !user_number || !sender || !content) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    try {
+        // Get current sequence number for this conversation
+        const { data: lastMsg } = await supabase
+            .from('messages')
+            .select('sequence_number')
+            .eq('conversation_id', conversation_id)
+            .order('sequence_number', { ascending: false })
+            .limit(1);
+
+        const sequence_number = lastMsg && lastMsg.length > 0 ? lastMsg[0].sequence_number + 1 : 1;
+
+        const { data, error } = await supabase
+            .from("messages")
+            .insert({
+                business_id,
+                conversation_id,
+                user_name,
+                user_number,
+                sender,
+                content,
+                sequence_number,
+                timestamp: timestamp || new Date().toISOString(),
+            });
+
+        if (error) {
+            console.error("Supabase insert error:", error);
+            return res.status(500).json({ error: error.message });
+        }
+
+        return res.json({ success: true, data });
+    } catch (err) {
+        console.error("Server error:", err);
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -201,39 +321,5 @@ if (require.main === module) {
         console.log(`🚀 Server running on http://localhost:${port}`);
     });
 }
-
-// @route   POST /api/save-message
-// @desc    Save chat message to Supabase
-// @access  Public
-app.post("/api/save-message", async (req, res) => {
-    const { business_id, sender, content, timestamp } = req.body;
-
-    console.log("SAVE HIT:", req.body);
-
-    if (!business_id || !sender || !content) {
-        return res.status(400).json({ error: "Missing fields" });
-    }
-
-    try {
-        const { data, error } = await supabase
-            .from("messages")
-            .insert({
-                business_id,
-                sender,
-                content,
-                timestamp: timestamp || new Date().toISOString(),
-            });
-
-        if (error) {
-            console.error("Supabase insert error:", error);
-            return res.status(500).json({ error });
-        }
-
-        return res.json({ success: true, data });
-    } catch (err) {
-        console.error("Server error:", err);
-        res.status(500).json({ error: err.message });
-    }
-});
 
 module.exports = app;

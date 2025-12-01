@@ -29,7 +29,10 @@ const ChatInterface: React.FC = () => {
     const navigate = useNavigate();
     const [business, setBusiness] = useState<Business | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
+    const [userNumber, setUserNumber] = useState<string | null>(null);
+    const [conversationId, setConversationId] = useState<string | null>(null);
     const [inputName, setInputName] = useState('');
+    const [inputNumber, setInputNumber] = useState('');
     const [loadingBusiness, setLoadingBusiness] = useState(true);
     const [businessError, setBusinessError] = useState('');
 
@@ -42,7 +45,6 @@ const ChatInterface: React.FC = () => {
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Fetch business data
     useEffect(() => {
         if (!businessId) return;
         fetchBusinessData();
@@ -70,21 +72,55 @@ const ChatInterface: React.FC = () => {
 
     useEffect(scrollToBottom, [messages, isTyping]);
 
-    const handleStartChat = () => {
-        if (inputName.trim()) {
-            setUserName(inputName.trim());
+    const handleStartChat = async () => {
+        if (!inputName.trim() || !inputNumber.trim()) {
+            alert('Please enter both name and phone number');
+            return;
+        }
+
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(inputNumber.trim())) {
+            alert('Please enter a valid 10-digit phone number');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/conversation/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    business_id: businessId,
+                    user_name: inputName.trim(),
+                    user_number: inputNumber.trim()
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.conversation_id) {
+                setConversationId(data.conversation_id);
+                setUserName(inputName.trim());
+                setUserNumber(inputNumber.trim());
+            } else {
+                alert('Failed to start conversation');
+            }
+        } catch (error) {
+            console.error('Error starting conversation:', error);
+            alert('Network error. Please try again.');
         }
     };
 
-    // SAVE MESSAGE
     const saveMessage = async (sender: 'user' | 'agent', content: string) => {
-        if (!businessId) return;
+        if (!businessId || !conversationId || !userName || !userNumber) return;
         try {
             await fetch(`${API_URL}/save-message`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     business_id: businessId,
+                    conversation_id: conversationId,
+                    user_name: userName,
+                    user_number: userNumber,
                     sender,
                     content,
                     timestamp: new Date().toISOString(),
@@ -95,42 +131,27 @@ const ChatInterface: React.FC = () => {
         }
     };
 
-    // ===========================
-    // HUMAN-LIKE TYPING DELAY FUNCTION
-    // ===========================
     const calculateTypingDelay = (text: string): number => {
-        if (!text) return 400; // safety fallback
+        if (!text) return 400;
 
         const words = text.trim().split(/\s+/).length;
         let delayPerWord;
 
         if (words <= 4) {
-            delayPerWord = 80 + Math.random() * 40;   // 80–120ms (short)
+            delayPerWord = 80 + Math.random() * 40;
         } else if (words <= 15) {
-            delayPerWord = 120 + Math.random() * 60;  // 120–180ms (normal)
+            delayPerWord = 120 + Math.random() * 60;
         } else {
-            delayPerWord = 180 + Math.random() * 70;  // 180–250ms (long)
+            delayPerWord = 180 + Math.random() * 70;
         }
 
         let total = words * delayPerWord;
-
-        // total delay boundaries
         total = Math.max(300, Math.min(total, 2500));
 
         return total;
     };
 
-    // ===========================
-    // STRICT AI MESSAGE HANDLER - NO TEXT MODIFICATION
-    // RULES:
-    // 1. AI response text MUST NOT be changed.
-    // 2. No auto-formatting, rewriting, or corrections.
-    // 3. Whitespace trim allowed, but text content untouched.
-    // 4. Message only added AFTER delay.
-    // 5. Typing indicator ON immediately, OFF only after delay.
-    // ===========================
     const handleAIResponse = async (aiReply: string) => {
-        // Safety fallback - DO NOT MODIFY AI TEXT
         let finalText = aiReply;
         if (!aiReply || typeof aiReply !== "string" || aiReply.trim() === "") {
             finalText = "I'm having trouble understanding. Please try again.";
@@ -138,13 +159,11 @@ const ChatInterface: React.FC = () => {
 
         const delay = calculateTypingDelay(finalText);
 
-        // Show typing dots NOW
         setIsTyping(true);
 
         setTimeout(async () => {
             setIsTyping(false);
 
-            // Add AI message EXACTLY as received - NO MODIFICATIONS
             const agentMessage: Message = {
                 id: `${Date.now()}`,
                 text: finalText,
@@ -157,7 +176,6 @@ const ChatInterface: React.FC = () => {
         }, delay);
     };
 
-    // SEND MESSAGE
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return;
 
@@ -183,6 +201,8 @@ const ChatInterface: React.FC = () => {
                     message: userText,
                     userName,
                     assistantName,
+                    conversation_id: conversationId,
+                    user_number: userNumber,
                     history: messages.map((m) => ({
                         role: m.sender === "user" ? "user" : "model",
                         parts: [{ text: m.text }],
@@ -192,7 +212,6 @@ const ChatInterface: React.FC = () => {
 
             const data = await response.json();
 
-            // Use human-like typing delay handler - STRICT: NO TEXT MODIFICATION
             await handleAIResponse(data.text);
 
         } catch (err) {
@@ -223,7 +242,7 @@ const ChatInterface: React.FC = () => {
         );
     }
 
-    if (!userName) {
+    if (!userName || !conversationId) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-900">
                 <div className="bg-gray-800 p-8 rounded-xl shadow-xl w-[350px]">
@@ -235,6 +254,15 @@ const ChatInterface: React.FC = () => {
                         className="w-full mb-4 px-4 py-2 rounded bg-gray-700 text-white placeholder-gray-400 border border-gray-600"
                         value={inputName}
                         onChange={(e) => setInputName(e.target.value)}
+                    />
+
+                    <input
+                        type="tel"
+                        placeholder="Enter phone number"
+                        className="w-full mb-4 px-4 py-2 rounded bg-gray-700 text-white placeholder-gray-400 border border-gray-600"
+                        value={inputNumber}
+                        onChange={(e) => setInputNumber(e.target.value.replace(/\D/g, ''))}
+                        maxLength={10}
                     />
 
                     <button
