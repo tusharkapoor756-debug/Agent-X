@@ -53,7 +53,6 @@ const ChatInterface: React.FC = () => {
 
     const fetchBusinessData = async () => {
         try {
-            // Updated to match Vercel route: /api/business/[id]/public
             const response = await fetch(`${API_URL}/business/${businessId}/public`);
             const data = await response.json();
 
@@ -114,6 +113,53 @@ const ChatInterface: React.FC = () => {
         }
     };
 
+    const saveMessage = async (sender: 'user' | 'agent', content: string) => {
+        if (!businessId || !userName || !userNumber) return;
+
+        // Ensure conversationId exists
+        let currentConvId = conversationId;
+        if (!currentConvId) {
+            try {
+                const response = await fetch(`${API_URL}/conversation/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        business_id: businessId,
+                        user_name: userName,
+                        user_number: userNumber
+                    })
+                });
+                const data = await response.json();
+                if (data.conversation_id) {
+                    currentConvId = data.conversation_id;
+                    setConversationId(data.conversation_id);
+                }
+            } catch (e) {
+                console.error("Failed to recover conversation ID", e);
+            }
+        }
+
+        if (!currentConvId) return;
+
+        try {
+            await fetch(`${API_URL}/save-message`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    business_id: businessId,
+                    conversation_id: currentConvId,
+                    user_name: userName,
+                    user_number: userNumber,
+                    sender,
+                    content,
+                    timestamp: new Date().toISOString(),
+                }),
+            });
+        } catch (err) {
+            console.error("Message save failed:", err);
+        }
+    };
+
     const calculateTypingDelay = (text: string): number => {
         const minDelay = 1500;
         const maxDelay = 3000;
@@ -143,6 +189,7 @@ const ChatInterface: React.FC = () => {
             };
 
             setMessages((prev) => [...prev, agentMessage]);
+            await saveMessage('agent', finalText);
         }, delay);
     };
 
@@ -160,6 +207,9 @@ const ChatInterface: React.FC = () => {
 
         setMessages((prev) => [...prev, newMessage]);
         setInputValue('');
+
+        // Save user message
+        await saveMessage('user', userText);
 
         try {
             const response = await fetch(`${API_URL}/chat/${businessId}`, {

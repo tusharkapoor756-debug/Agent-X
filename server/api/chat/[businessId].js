@@ -101,28 +101,8 @@ const handler = async (req, res) => {
             finalMessage = `${message}\n\n(SYSTEM NOTE: Your last reply was: "${lastAssistantMessage}". You MUST NOT repeat this exact wording or meaning. Say something new.)`;
         }
 
-        // SAVE USER MESSAGE FIRST
-        if (conversation_id && userName && user_number) {
-            const { data: lastMsg } = await supabase
-                .from('messages')
-                .select('sequence_number')
-                .eq('conversation_id', conversation_id)
-                .order('sequence_number', { ascending: false })
-                .limit(1);
-
-            const nextSequence = lastMsg && lastMsg.length > 0 ? lastMsg[0].sequence_number + 1 : 1;
-
-            await supabase.from('messages').insert({
-                business_id: businessId,
-                conversation_id: conversation_id,
-                user_name: userName,
-                user_number: user_number,
-                sender: 'user',
-                content: message,
-                sequence_number: nextSequence,
-                timestamp: new Date().toISOString()
-            });
-        }
+        // NOTE: Message saving is handled by the frontend via /api/save-message to ensure reliability and avoid duplicates.
+        // We do NOT save messages here anymore.
 
         try {
             const result = await chat.sendMessage(finalMessage);
@@ -150,29 +130,6 @@ const handler = async (req, res) => {
                         }
                     }
                 }
-            }
-
-            // SAVE AI MESSAGE AFTER GENERATION
-            if (conversation_id && userName && user_number) {
-                const { data: lastMsg } = await supabase
-                    .from('messages')
-                    .select('sequence_number')
-                    .eq('conversation_id', conversation_id)
-                    .order('sequence_number', { ascending: false })
-                    .limit(1);
-
-                const nextSequence = lastMsg && lastMsg.length > 0 ? lastMsg[0].sequence_number + 1 : 1;
-
-                await supabase.from('messages').insert({
-                    business_id: businessId,
-                    conversation_id: conversation_id,
-                    user_name: userName,
-                    user_number: user_number,
-                    sender: 'agent',
-                    content: text,
-                    sequence_number: nextSequence,
-                    timestamp: new Date().toISOString()
-                });
             }
 
             res.json({
