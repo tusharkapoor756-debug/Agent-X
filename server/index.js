@@ -7,7 +7,8 @@ const { buildPrompt, getRandomAssistantName } = require('./utils/promptBuilder')
 const app = express();
 const port = 3000;
 
-app.use(cors());
+// Allow all origins for public access
+app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 app.use(express.json());
 
 // Import routes
@@ -36,6 +37,12 @@ app.post('/api/conversation/start', async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+        // Validate phone number (Strict 10 digits)
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(user_number)) {
+            return res.status(400).json({ error: 'Invalid phone number. Must be exactly 10 digits.' });
+        }
+
         // Check if conversation already exists for this user and business
         const { data: existingConv, error: checkError } = await supabase
             .from('messages')
@@ -51,8 +58,9 @@ app.post('/api/conversation/start', async (req, res) => {
 
         if (existingConv && existingConv.length > 0) {
             return res.json({
+                success: true,
                 conversation_id: existingConv[0].conversation_id,
-                existing: true
+                exists: true
             });
         }
 
@@ -60,8 +68,9 @@ app.post('/api/conversation/start', async (req, res) => {
         const conversation_id = `conv_${business_id}_${Date.now()}`;
 
         res.json({
+            success: true,
             conversation_id,
-            existing: false
+            exists: false
         });
 
     } catch (error) {
@@ -126,7 +135,7 @@ app.post('/api/chat/:businessId', async (req, res) => {
         let systemPrompt = buildPrompt(business, assistantName, userName, businessData.offer_rules_json);
 
         // ENFORCE BRANDED ASSISTANT IDENTITY
-        systemPrompt += `\n\nCRITICAL INSTRUCTION: You are the official sales assistant of ${business.businessName}. NEVER say "I am your assistant" or "I am an AI". ALWAYS identify yourself as the assistant of ${business.businessName}. You work for the business only.`;
+        systemPrompt += `\n\nCRITICAL INSTRUCTION: You are the official sales assistant of ${business.businessName}. NEVER say "I am your assistant" or "I am an AI". ALWAYS identify yourself as the assistant of ${business.businessName}. You work for the business only. Start by saying "I am assistant of ${business.businessName}, how can I help you today?" if asked who you are.`;
 
         // Initialize model with system instruction
         const model = genAI.getGenerativeModel({
@@ -155,6 +164,30 @@ app.post('/api/chat/:businessId', async (req, res) => {
         let finalMessage = message;
         if (lastAssistantMessage) {
             finalMessage = `${message}\n\n(SYSTEM NOTE: Your last reply was: "${lastAssistantMessage}". You MUST NOT repeat this exact wording or meaning. Say something new.)`;
+        }
+
+        // SAVE USER MESSAGE FIRST
+        if (conversation_id && userName && user_number) {
+            // Get current sequence number
+            const { data: lastMsg } = await supabase
+                .from('messages')
+                .select('sequence_number')
+                .eq('conversation_id', conversation_id)
+                .order('sequence_number', { ascending: false })
+                .limit(1);
+
+            const nextSequence = lastMsg && lastMsg.length > 0 ? lastMsg[0].sequence_number + 1 : 1;
+
+            await supabase.from('messages').insert({
+                business_id: businessId,
+                conversation_id: conversation_id,
+                user_name: userName,
+                user_number: user_number,
+                sender: 'user',
+                content: message,
+                sequence_number: nextSequence,
+                timestamp: new Date().toISOString()
+            });
         }
 
         try {
@@ -189,9 +222,9 @@ app.post('/api/chat/:businessId', async (req, res) => {
                 }
             }
 
-            // Save messages with conversation tracking if conversation_id provided
+            // SAVE AI MESSAGE AFTER GENERATION
             if (conversation_id && userName && user_number) {
-                // Get current sequence number
+                // Get current sequence number again (it increased by 1)
                 const { data: lastMsg } = await supabase
                     .from('messages')
                     .select('sequence_number')
@@ -201,28 +234,16 @@ app.post('/api/chat/:businessId', async (req, res) => {
 
                 const nextSequence = lastMsg && lastMsg.length > 0 ? lastMsg[0].sequence_number + 1 : 1;
 
-                await supabase.from('messages').insert([
-                    {
-                        business_id: businessId,
-                        conversation_id: conversation_id,
-                        user_name: userName,
-                        user_number: user_number,
-                        sender: 'user',
-                        content: message,
-                        sequence_number: nextSequence,
-                        timestamp: new Date().toISOString()
-                    },
-                    {
-                        business_id: businessId,
-                        conversation_id: conversation_id,
-                        user_name: userName,
-                        user_number: user_number,
-                        sender: 'agent',
-                        content: text,
-                        sequence_number: nextSequence + 1,
-                        timestamp: new Date().toISOString()
-                    }
-                ]);
+                await supabase.from('messages').insert({
+                    business_id: businessId,
+                    conversation_id: conversation_id,
+                    user_name: userName,
+                    user_number: user_number,
+                    sender: 'agent',
+                    content: text,
+                    sequence_number: nextSequence,
+                    timestamp: new Date().toISOString()
+                });
             }
 
             // Check for lead handoff trigger
