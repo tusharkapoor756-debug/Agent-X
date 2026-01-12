@@ -142,7 +142,7 @@ const ChatInterface: React.FC = () => {
         if (!currentConvId) return;
 
         try {
-            await fetch(`${API_URL}/save-message`, {
+            await fetch(`${API_URL}/api/save-message`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -212,7 +212,7 @@ const ChatInterface: React.FC = () => {
         await saveMessage('user', userText);
 
         try {
-            const response = await fetch(`${API_URL}/chat/${businessId}`, {
+            const response = await fetch(`${API_URL}/api/chat/${businessId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

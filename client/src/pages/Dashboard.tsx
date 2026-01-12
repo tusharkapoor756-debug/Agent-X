@@ -32,7 +32,7 @@ const Dashboard = () => {
 
     const fetchBusiness = async () => {
         try {
-            const response = await fetch(`${API_URL}/business/my-business`, {
+            const response = await fetch(`${API_URL}/api/business/my-business`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
