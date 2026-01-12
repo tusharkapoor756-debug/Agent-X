@@ -53,7 +53,7 @@ const ChatInterface: React.FC = () => {
 
     const fetchBusinessData = async () => {
         try {
-            const response = await fetch(`${API_URL}/business/${businessId}/public`);
+            const response = await fetch(`${API_URL}/api/business/${businessId}/public`);
             const data = await response.json();
 
             if (data.success) {

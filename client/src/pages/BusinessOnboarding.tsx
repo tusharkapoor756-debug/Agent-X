@@ -62,7 +62,7 @@ const BusinessOnboarding = () => {
 
         setIsParsing(true);
         try {
-            const response = await fetch(`${API_URL}/business/preview/parse-offers`, {
+            const response = await fetch(`${API_URL}/api/business/preview/parse-offers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ offers_text: offersText })
@@ -95,7 +95,7 @@ const BusinessOnboarding = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${API_URL}/business`, {
+            const response = await fetch(`${API_URL}/api/business`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
