@@ -88,7 +88,7 @@ const ChatInterface: React.FC = () => {
         }
 
         try {
-            const response = await fetch(`${API_URL}/conversation/start`, {
+            const response = await fetch(`${API_URL}/api/conversation/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -120,7 +120,7 @@ const ChatInterface: React.FC = () => {
         let currentConvId = conversationId;
         if (!currentConvId) {
             try {
-                const response = await fetch(`${API_URL}/conversation/start`, {
+                const response = await fetch(`${API_URL}/api/conversation/start`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
