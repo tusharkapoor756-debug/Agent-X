@@ -1,3 +1,3 @@
-const API_URL = "https://server-tusharkapoor756-2007-tushar-kapoors-projects-9cac3c78.vercel.app/api";
+const API_URL = "https://server-tusharkapoor756-2007-tushar-kapoors-projects-9cac3c78.vercel.app";
 
 export default API_URL;
