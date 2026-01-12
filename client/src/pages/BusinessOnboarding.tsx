@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import API_URL from '../config';
+
 import { useNavigate } from 'react-router-dom';
 
 interface Product {
@@ -62,7 +62,7 @@ const BusinessOnboarding = () => {
 
         setIsParsing(true);
         try {
-            const response = await fetch(`${API_URL}/api/business/preview/parse-offers`, {
+            const response = await fetch(`https://server-tusharkapoor756-2007-tushar-kapoors-projects-9cac3c78.vercel.app/api/business/preview/parse-offers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ offers_text: offersText })
@@ -95,7 +95,7 @@ const BusinessOnboarding = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${API_URL}/api/business`, {
+            const response = await fetch(`https://server-tusharkapoor756-2007-tushar-kapoors-projects-9cac3c78.vercel.app/api/business`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
