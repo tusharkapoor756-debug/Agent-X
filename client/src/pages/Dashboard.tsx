@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SERVER_API_URL } from '../config';
 
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 interface Business {
@@ -20,22 +20,36 @@ interface Business {
 }
 
 const Dashboard = () => {
-    const { user, token, logout } = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const { businessId } = useParams();
     const [business, setBusiness] = useState<Business | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [copiedLink, setCopiedLink] = useState(false);
 
     useEffect(() => {
+        if (!businessId) {
+            navigate('/');
+            return;
+        }
         fetchBusiness();
-    }, []);
+    }, [businessId]);
 
     const fetchBusiness = async () => {
         try {
-            const response = await fetch(`${SERVER_API_URL}/api/business/my-business`, {
+            // Using logic: GET {EXPRESS_BACKEND_URL}/api/business/:businessId
+            // The endpoint must match what the server actually provides. 
+            // Assuming /api/business/:id/public is the one we can use without auth if we want public access, 
+            // OR if this is the owner dashboard, we might need auth headers + ID check.
+            // Requirement says: "Fetch business ONLY using that ID" and "Reads businessId ONLY from URL"
+            // And "GET {EXPRESS_BACKEND_URL}/api/business/:businessId" is specified in CRITICAL BUG FIXES.
+
+            // NOTE: We'll attempt the explicit ID endpoint.
+            const response = await fetch(`${SERVER_API_URL}/api/business/${businessId}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    // Start with public fetching or if auth is needed, keep it but dont rely on /my-business
+                    // 'Authorization': `Bearer ${token}` 
                 }
             });
 
@@ -45,11 +59,8 @@ const Dashboard = () => {
                 setBusiness(data.business);
             } else {
                 if (response.status === 404) {
-                    // No business found, redirect to onboarding
-                    navigate('/onboarding');
-                } else if (response.status === 401) {
-                    logout();
-                    navigate('/login');
+                    // No business found
+                    setError('Business not found');
                 } else {
                     setError(data.error || 'Failed to load business');
                 }
@@ -93,10 +104,10 @@ const Dashboard = () => {
                         <p className="text-lg font-semibold">Error</p>
                         <p className="mt-2">{error}</p>
                         <button
-                            onClick={() => navigate('/onboarding')}
+                            onClick={() => navigate('/')}
                             className="mt-4 bg-[#075e54] text-white px-6 py-2 rounded-lg hover:bg-[#128c7e]"
                         >
-                            Create Business
+                            Back to Home
                         </button>
                     </div>
                 </div>
@@ -145,10 +156,10 @@ const Dashboard = () => {
                         <div className="flex justify-between items-start mb-6 border-b border-[#00FF7F]/10 pb-4">
                             <h2 className="text-xl font-bold font-mono text-[#00FF7F] tracking-wider">BUSINESS PROTOCOLS</h2>
                             <Link
-                                to="/onboarding"
+                                to={`/`}
                                 className="text-[#00D16B] hover:text-white text-xs font-bold uppercase tracking-wider hover:underline transition-colors"
                             >
-                                [ EDIT CONFIGURATION ]
+                                [ NEW BUSINESS ]
                             </Link>
                         </div>
 

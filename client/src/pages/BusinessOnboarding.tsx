@@ -119,7 +119,7 @@ const BusinessOnboarding = () => {
             const data = await response.json();
 
             if (data.success) {
-                navigate(`/chat/${data.business.id}`);
+                navigate(`/dashboard/${data.business.id}`);
             } else {
                 setError(data.error || 'Failed to create business');
             }
